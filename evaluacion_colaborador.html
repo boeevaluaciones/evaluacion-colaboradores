@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Colaboradores</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .form-section {
+            @apply bg-white p-6 rounded-2xl shadow-lg mb-6;
+        }
+        .form-group {
+            @apply mb-4;
+        }
+        label {
+            @apply block text-sm font-medium text-gray-700 mb-1;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            @apply w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-all duration-200;
+        }
+        .checkbox-group {
+            @apply flex flex-col space-y-2;
+        }
+        .checkbox-container {
+            @apply flex items-center;
+        }
+        .checkbox-container input[type="checkbox"] {
+            @apply h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500;
+        }
+        .loading-overlay {
+            @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+        }
+        .spinner {
+            @apply animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white;
+        }
+        .modal {
+            @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+        }
+        .modal-content {
+            @apply bg-white p-8 rounded-xl shadow-2xl w-11/12 max-w-lg text-left;
+        }
+        .btn-primary {
+            @apply w-full py-2 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors duration-200;
+        }
+        .list-item {
+            @apply bg-gray-50 p-4 rounded-lg shadow-sm mb-2 transition-all duration-200 ease-in-out hover:shadow-md cursor-pointer;
+        }
+        .details-grid {
+            @apply grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-sm;
+        }
+        .collaborator-list-item {
+            @apply bg-gray-50 p-4 rounded-lg shadow-sm mb-2 flex justify-between items-center transition-all duration-200 ease-in-out hover:shadow-md;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8">
+
+    <!-- Modal de mensaje general -->
+    <div id="message-modal" class="modal">
+        <div class="modal-content text-center">
+            <div id="modal-icon" class="text-4xl mb-4"></div>
+            <p id="modal-text" class="text-lg font-medium mb-4"></p>
+            <button id="close-modal-btn" class="btn-primary">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de detalles de evaluación -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-end items-center mb-4">
+                <button id="close-details-modal-btn" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div id="details-content" class="max-h-96 overflow-y-auto">
+                <!-- Contenido de los detalles se inyectará aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Medición de Desempeño</h1>
+            <p class="text-gray-500 mt-2">Completa el formulario para registrar una nueva evaluación.</p>
+            <p class="mt-2 text-sm text-gray-400">Tu ID de usuario: <span id="user-id-display" class="font-mono text-gray-500"></span></p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Formulario de Evaluación -->
+            <div class="form-section">
+                <form id="evaluation-form" class="space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Datos del Colaborador</h2>
+                    <div class="form-group">
+                        <label for="collaborator">Nombre Colaborador(a)</label>
+                        <select id="collaborator" required>
+                            <option value="">Selecciona un colaborador</option>
+                        </select>
+                    </div>
+
+                    <div id="collaborator-info" class="text-sm text-gray-500 hidden mb-6">
+                        <p><strong>Código:</strong> <span id="collab-code"></span></p>
+                        <p><strong>Posición:</strong> <span id="collab-position"></span></p>
+                    </div>
+
+                    <h2 class="text-xl font-semibold text-gray-700 mt-8 mb-4">Puntos de Evaluación</h2>
+                    
+                    <!-- Sección de ESPACIOS -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">1. Espacios</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="esp-anterior">Anterior</label>
+                                <input type="number" id="esp-anterior" class="esp-input">
+                            </div>
+                            <div>
+                                <label for="esp-actual">Actual</label>
+                                <input type="number" id="esp-actual" class="esp-input">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="esp-diferencia">Diferencia</label>
+                            <input type="number" id="esp-diferencia" readonly class="bg-gray-200">
+                        </div>
+                        <div class="form-group">
+                            <label for="esp-puntuacion">Puntuación</label>
+                            <input type="number" step="0.01" id="esp-puntuacion">
+                        </div>
+                        <div class="form-group">
+                            <label for="esp-observacion">Observación</label>
+                            <textarea id="esp-observacion" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección de PRESENCIA -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">2. Presencia</h3>
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="pres-surtido" class="pres-checkbox">
+                                <label for="pres-surtido" class="ml-2">Surtido</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="pres-agotado" class="pres-checkbox">
+                                <label for="pres-agotado" class="ml-2">Agotado</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="pres-faltante" class="pres-checkbox">
+                                <label for="pres-faltante" class="ml-2">Faltante</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="pres-puntuacion">Puntuación</label>
+                            <input type="number" id="pres-puntuacion" readonly class="bg-gray-200">
+                        </div>
+                        <div class="form-group">
+                            <label for="pres-observacion">Observación</label>
+                            <textarea id="pres-observacion" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección de PREC -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">3. Precios</h3>
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="prec-correcto" class="prec-checkbox">
+                                <label for="prec-correcto" class="ml-2">Correcto</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="prec-marcado" class="prec-checkbox">
+                                <label for="prec-marcado" class="ml-2">Marcado</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="prec-pop" class="prec-checkbox">
+                                <label for="prec-pop" class="ml-2">Pop</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="prec-puntuacion">Puntuación</label>
+                            <input type="number" id="prec-puntuacion" readonly class="bg-gray-200">
+                        </div>
+                        <div class="form-group">
+                            <label for="prec-observacion">Observación</label>
+                            <textarea id="prec-observacion" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de EXH -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">4. Exhibición</h3>
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="exh-pop" class="exh-checkbox">
+                                <label for="exh-pop" class="ml-2">Pop</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="exh-planograma" class="exh-checkbox">
+                                <label for="exh-planograma" class="ml-2">Planograma</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="exh-adicional" class="exh-checkbox">
+                                <label for="exh-adicional" class="ml-2">Adicional</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="exh-puntuacion">Puntuación</label>
+                            <input type="number" id="exh-puntuacion" readonly class="bg-gray-200">
+                        </div>
+                        <div class="form-group">
+                            <label for="exh-observacion">Observación</label>
+                            <textarea id="exh-observacion" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección de CON -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">5. Conocimiento</h3>
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="con-speech" class="con-checkbox">
+                                <label for="con-speech" class="ml-2">Speech</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="con-productos" class="con-checkbox">
+                                <label for="con-productos" class="ml-2">Productos</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="con-modo" class="con-checkbox">
+                                <label for="con-modo" class="ml-2">Modo</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="con-puntuacion">Puntuación</label>
+                            <input type="number" id="con-puntuacion" readonly class="bg-gray-200">
+                        </div>
+                        <div class="form-group">
+                            <label for="con-observacion">Observación</label>
+                            <textarea id="con-observacion" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de IMA -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">6. Imagen</h3>
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="ima-uniforme" class="ima-checkbox">
+                                <label for="ima-uniforme" class="ml-2">Uniforme</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="ima-carnet" class="ima-checkbox">
+                                <label for="ima-carnet" class="ml-2">Carnet</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="ima-imagen" class="ima-checkbox">
+                                <label for="ima-imagen" class="ml-2">Imagen</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="ima-puntuacion">Puntuación</label>
+                            <input type="number" id="ima-puntuacion" readonly class="bg-gray-200">
+                        </div>
+                        <div class="form-group">
+                            <label for="ima-observacion">Observación</label>
+                            <textarea id="ima-observacion" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Ventas del Mes -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">7. Ventas del Mes</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="venta-rd">Venta RD</label>
+                                <input type="number" id="venta-rd">
+                            </div>
+                            <div>
+                                <label for="venta-unidades">Venta Unidades</label>
+                                <input type="number" id="venta-unidades">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Reporte de Visita -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">8. Reporte de Visita</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="tipo-visita">Tipo Visita</label>
+                                <select id="tipo-visita">
+                                    <option>OBJETIVO</option>
+                                    <option>SEGUIMIENTO</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="asistencia">Asistencia</label>
+                                <select id="asistencia">
+                                    <option>EN PUESTO</option>
+                                    <option>FUERA DE PUESTO</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="otras-observaciones">Otras Observaciones</label>
+                            <textarea id="otras-observaciones" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Política y Valores -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">9. Política y Valores</h3>
+                        <div class="form-group checkbox-group grid grid-cols-2 gap-2">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="politica">
+                                <label for="politica" class="ml-2">Política</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="mision">
+                                <label for="mision" class="ml-2">Misión</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="vision">
+                                <label for="vision" class="ml-2">Visión</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="valores">
+                                <label for="valores" class="ml-2">Valores</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="otras-observaciones-2">Otras Observaciones</label>
+                            <textarea id="otras-observaciones-2" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección de Puntos de Desarrollo -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">10. Puntos de Desarrollo</h3>
+                        <div class="form-group checkbox-group grid grid-cols-2 gap-2">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="llenado">
+                                <label for="llenado" class="ml-2">Llenado Planificador</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="cambio">
+                                <label for="cambio" class="ml-2">Cambio Ruta/Horario</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="oportunidad">
+                                <label for="oportunidad" class="ml-2">Oportunidad Mejora</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="entrenamiento">
+                                <label for="entrenamiento" class="ml-2">Entrenamiento Producto</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Especifique -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">11. Especifique</h3>
+                        <div class="form-group">
+                            <textarea id="especifique" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Puntos Trabajados -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">12. Puntos Trabajados</h3>
+                        <div class="form-group">
+                            <textarea id="puntos-trabajados" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Compromiso -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">13. Compromiso</h3>
+                        <div class="form-group">
+                            <textarea id="compromiso" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Necesidades Consultoras -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">14. Necesidades Consultoras</h3>
+                        <div class="form-group">
+                            <textarea id="necesidades-con" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Necesidades Punto de Venta -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">15. Necesidades Punto de Venta</h3>
+                        <div class="form-group">
+                            <textarea id="necesidades-pdv" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Pendientes -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">16. Pendientes</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="faltantes">Faltantes</label>
+                                <textarea id="faltantes" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label for="ofertas">Ofertas</label>
+                                <textarea id="ofertas" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Puntos de Acción -->
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">17. Puntos de Acción</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="que">Qué</label>
+                                <textarea id="que" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label for="quien">Quién</label>
+                                <textarea id="quien" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="como">Cómo</label>
+                                <textarea id="como" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label for="cuando">Cuándo</label>
+                                <textarea id="cuando" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Guardar Evaluación</button>
+                </form>
+            </div>
+
+            <!-- Listas de Datos -->
+            <div>
+                <!-- Lista de Evaluaciones -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Evaluaciones Registradas</h2>
+                    <div id="evaluations-list" class="space-y-4">
+                        <p class="text-center text-gray-500">Cargando evaluaciones...</p>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Gestión de Colaboradores</h2>
+                    
+                    <!-- Formulario de gestión de colaboradores -->
+                    <form id="collaborator-form" class="space-y-4">
+                        <input type="hidden" id="collab-doc-id">
+                        <div class="form-group">
+                            <label for="collab-name">Nombre</label>
+                            <input type="text" id="collab-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="collab-code-input">Código</label>
+                            <input type="text" id="collab-code-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="collab-position-input">Posición</label>
+                            <input type="text" id="collab-position-input" required>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="submit" id="add-collab-btn" class="btn-primary flex-1">Agregar</button>
+                            <button type="button" id="update-collab-btn" class="btn-primary flex-1 bg-green-500 hover:bg-green-600 hidden">Actualizar</button>
+                            <button type="button" id="cancel-edit-btn" class="btn-primary flex-1 bg-gray-500 hover:bg-gray-600 hidden">Cancelar</button>
+                        </div>
+                    </form>
+
+                    <!-- Lista de colaboradores gestionables -->
+                    <div id="collaborators-list" class="space-y-2 mt-6">
+                        <p class="text-center text-gray-500">Cargando colaboradores...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, getDoc, serverTimestamp, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        setLogLevel('debug');
+        
+        // Variables globales
+        let db;
+        let auth;
+        let userId;
+
+        // Configuración de Firebase - Estas variables se llenan automáticamente por la plataforma
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Referencias del DOM
+        const userIdDisplay = document.getElementById('user-id-display');
+        const collaboratorSelect = document.getElementById('collaborator');
+        const collaboratorInfo = document.getElementById('collaborator-info');
+        const collabCodeSpan = document.getElementById('collab-code');
+        const collabPositionSpan = document.getElementById('collab-position');
+        const form = document.getElementById('evaluation-form');
+        const evaluationsList = document.getElementById('evaluations-list');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        // Modales
+        const messageModal = document.getElementById('message-modal');
+        const modalText = document.getElementById('modal-text');
+        const modalIcon = document.getElementById('modal-icon');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const detailsModal = document.getElementById('details-modal');
+        const detailsContent = document.getElementById('details-content');
+        const closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
+
+        // Puntos de cálculo dinámicos
+        const espAnteriorInput = document.getElementById('esp-anterior');
+        const espActualInput = document.getElementById('esp-actual');
+        const espDiferenciaInput = document.getElementById('esp-diferencia');
+        const presCheckboxes = document.querySelectorAll('.pres-checkbox');
+        const presPuntuacionInput = document.getElementById('pres-puntuacion');
+        const precCheckboxes = document.querySelectorAll('.prec-checkbox');
+        const precPuntuacionInput = document.getElementById('prec-puntuacion');
+        const exhCheckboxes = document.querySelectorAll('.exh-checkbox');
+        const exhPuntuacionInput = document.getElementById('exh-puntuacion');
+        const conCheckboxes = document.querySelectorAll('.con-checkbox');
+        const conPuntuacionInput = document.getElementById('con-puntuacion');
+        const imaCheckboxes = document.querySelectorAll('.ima-checkbox');
+        const imaPuntuacionInput = document.getElementById('ima-puntuacion');
+
+        // Referencias para la gestión de colaboradores
+        const collaboratorForm = document.getElementById('collaborator-form');
+        const collabNameInput = document.getElementById('collab-name');
+        const collabCodeInput = document.getElementById('collab-code-input');
+        const collabPositionInput = document.getElementById('collab-position-input');
+        const addCollabBtn = document.getElementById('add-collab-btn');
+        const updateCollabBtn = document.getElementById('update-collab-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const collabDocIdInput = document.getElementById('collab-doc-id');
+        const collaboratorsListDiv = document.getElementById('collaborators-list');
+        
+        // Función para mostrar un modal genérico
+        function showModal(id, text = '', isSuccess = null) {
+            const modal = document.getElementById(id);
+            if (id === 'message-modal') {
+                modalText.textContent = text;
+                if (isSuccess !== null) {
+                    if (isSuccess) {
+                        modalIcon.innerHTML = `<i class="fas fa-check-circle text-green-500"></i>`;
+                    } else {
+                        modalIcon.innerHTML = `<i class="fas fa-times-circle text-red-500"></i>`;
+                    }
+                }
+            }
+            modal.classList.remove('hidden');
+        }
+
+        // Función para ocultar un modal genérico
+        function hideModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('hidden');
+        }
+
+        // Event listeners para los botones de cerrar modal
+        closeModalBtn.addEventListener('click', () => hideModal('message-modal'));
+        closeDetailsModalBtn.addEventListener('click', () => hideModal('details-modal'));
+
+        // Inicializar la app de Firebase
+        initializeApp(firebaseConfig);
+        auth = getAuth();
+        db = getFirestore();
+
+        // Autenticación anónima o con token
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                userIdDisplay.textContent = userId;
+                console.log("Usuario autenticado. UID:", userId);
+                await setupRealtimeListener();
+                await setupCollaboratorsListener();
+            } else {
+                console.log("No hay usuario autenticado, iniciando sesión anónima...");
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Error al iniciar sesión:", error);
+                    showModal('message-modal', "Error al iniciar sesión. Por favor, recarga la página.", false);
+                }
+            }
+        });
+
+        // Configurar el listener en tiempo real para los colaboradores
+        function setupCollaboratorsListener() {
+            const collaboratorsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/colaboradores`);
+            onSnapshot(collaboratorsCollectionRef, (snapshot) => {
+                const collaborators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Actualizar el select de evaluación
+                collaboratorSelect.innerHTML = '<option value="">Selecciona un colaborador</option>';
+                collaborators.forEach(collab => {
+                    const option = document.createElement('option');
+                    option.value = collab.name;
+                    option.textContent = `${collab.name}`;
+                    option.dataset.code = collab.code;
+                    option.dataset.position = collab.position;
+                    collaboratorSelect.appendChild(option);
+                });
+
+                // Actualizar la lista de gestión de colaboradores
+                collaboratorsListDiv.innerHTML = '';
+                if (collaborators.length === 0) {
+                    collaboratorsListDiv.innerHTML = `<p class="text-center text-gray-500">No hay colaboradores registrados.</p>`;
+                    return;
+                }
+                
+                collaborators.forEach(collab => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'collaborator-list-item';
+                    listItem.innerHTML = `
+                        <div>
+                            <p class="font-semibold">${collab.name}</p>
+                            <p class="text-xs text-gray-500">${collab.position} (${collab.code})</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button class="edit-collab-btn text-blue-500 hover:text-blue-700" data-id="${collab.id}"><i class="fas fa-edit"></i></button>
+                            <button class="delete-collab-btn text-red-500 hover:text-red-700" data-id="${collab.id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    `;
+                    collaboratorsListDiv.appendChild(listItem);
+                });
+            }, (error) => {
+                console.error("Error al escuchar colaboradores:", error);
+                collaboratorsListDiv.innerHTML = `<p class="text-center text-red-500">Error al cargar colaboradores.</p>`;
+            });
+        }
+        
+        // Listener para agregar/actualizar colaboradores
+        collaboratorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loadingOverlay.classList.remove('hidden');
+
+            const id = collabDocIdInput.value;
+            const name = collabNameInput.value.trim();
+            const code = collabCodeInput.value.trim();
+            const position = collabPositionInput.value.trim();
+
+            if (!name || !code || !position) {
+                loadingOverlay.classList.add('hidden');
+                showModal('message-modal', "Todos los campos son obligatorios.", false);
+                return;
+            }
+
+            try {
+                const collaboratorsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/colaboradores`);
+                if (id) {
+                    // Actualizar
+                    const docRef = doc(collaboratorsCollectionRef, id);
+                    await setDoc(docRef, { name, code, position }, { merge: true });
+                    showModal('message-modal', "Colaborador actualizado exitosamente.", true);
+                    collabDocIdInput.value = '';
+                    addCollabBtn.classList.remove('hidden');
+                    updateCollabBtn.classList.add('hidden');
+                    cancelEditBtn.classList.add('hidden');
+                } else {
+                    // Agregar
+                    await addDoc(collaboratorsCollectionRef, { name, code, position });
+                    showModal('message-modal', "Colaborador agregado exitosamente.", true);
+                }
+                collaboratorForm.reset();
+            } catch (error) {
+                console.error("Error al guardar colaborador:", error);
+                showModal('message-modal', "Error al guardar colaborador. Por favor, inténtalo de nuevo.", false);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        // Listener para editar colaboradores
+        collaboratorsListDiv.addEventListener('click', (e) => {
+            if (e.target.closest('.edit-collab-btn')) {
+                const docId = e.target.closest('.edit-collab-btn').dataset.id;
+                const listItem = e.target.closest('.collaborator-list-item');
+                const name = listItem.querySelector('p:first-child').textContent;
+                const code = listItem.querySelector('p:last-child').textContent.match(/\(([^)]+)\)/)[1];
+                const position = listItem.querySelector('p:last-child').textContent.split('(')[0].trim();
+
+                collabNameInput.value = name;
+                collabCodeInput.value = code;
+                collabPositionInput.value = position;
+                collabDocIdInput.value = docId;
+
+                addCollabBtn.classList.add('hidden');
+                updateCollabBtn.classList.remove('hidden');
+                cancelEditBtn.classList.remove('hidden');
+                collabNameInput.focus();
+            }
+        });
+
+        // Listener para eliminar colaboradores
+        collaboratorsListDiv.addEventListener('click', async (e) => {
+            if (e.target.closest('.delete-collab-btn')) {
+                const docId = e.target.closest('.delete-collab-btn').dataset.id;
+                loadingOverlay.classList.remove('hidden');
+                try {
+                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/colaboradores`, docId);
+                    await deleteDoc(docRef);
+                    showModal('message-modal', "Colaborador eliminado.", true);
+                } catch (error) {
+                console.error("Error al eliminar colaborador:", error);
+                showModal('message-modal', "Error al eliminar. Inténtalo de nuevo.", false);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            }
+        });
+
+        // Listener para cancelar la edición
+        cancelEditBtn.addEventListener('click', () => {
+            collaboratorForm.reset();
+            collabDocIdInput.value = '';
+            addCollabBtn.classList.remove('hidden');
+            updateCollabBtn.classList.add('hidden');
+            cancelEditBtn.classList.add('hidden');
+        });
+
+        // Actualizar la información del colaborador
+        collaboratorSelect.addEventListener('change', (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            if (selectedOption.value) {
+                collabCodeSpan.textContent = selectedOption.dataset.code;
+                collabPositionSpan.textContent = selectedOption.dataset.position;
+                collaboratorInfo.classList.remove('hidden');
+            } else {
+                collaboratorInfo.classList.add('hidden');
+            }
+        });
+
+        // Cálculo de ESP_DIFERENCIA
+        function calculateEspDiferencia() {
+            const anterior = parseFloat(espAnteriorInput.value) || 0;
+            const actual = parseFloat(espActualInput.value) || 0;
+            espDiferenciaInput.value = actual - anterior;
+        }
+
+        // Event listeners para calcular la diferencia
+        espAnteriorInput.addEventListener('input', calculateEspDiferencia);
+        espActualInput.addEventListener('input', calculateEspDiferencia);
+
+        // Función genérica para calcular puntuaciones de checkbox
+        function calculateCheckboxScore(checkboxes) {
+            let allChecked = true;
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.checked) {
+                    allChecked = false;
+                }
+            });
+            return allChecked ? 1 : 0;
+        }
+
+        // Event listeners para calcular puntuaciones
+        presCheckboxes.forEach(cb => cb.addEventListener('change', () => presPuntuacionInput.value = calculateCheckboxScore(presCheckboxes)));
+        precCheckboxes.forEach(cb => cb.addEventListener('change', () => precPuntuacionInput.value = calculateCheckboxScore(precCheckboxes)));
+        exhCheckboxes.forEach(cb => cb.addEventListener('change', () => exhPuntuacionInput.value = calculateCheckboxScore(exhCheckboxes)));
+        conCheckboxes.forEach(cb => cb.addEventListener('change', () => conPuntuacionInput.value = calculateCheckboxScore(conCheckboxes)));
+        imaCheckboxes.forEach(cb => cb.addEventListener('change', () => imaPuntuacionInput.value = calculateCheckboxScore(imaCheckboxes)));
+
+        // Envío del formulario
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loadingOverlay.classList.remove('hidden');
+
+            const collaboratorName = collaboratorSelect.value;
+            const selectedOption = collaboratorSelect.options[collaboratorSelect.selectedIndex];
+            if (!collaboratorName) {
+                loadingOverlay.classList.add('hidden');
+                showModal('message-modal', "Por favor, selecciona un colaborador.", false);
+                return;
+            }
+
+            const evaluationData = {
+                collaborator: {
+                    name: selectedOption.value,
+                    code: selectedOption.dataset.code,
+                    position: selectedOption.dataset.position
+                },
+                date: serverTimestamp(),
+                // Campos de ESP
+                esp_anterior: parseFloat(espAnteriorInput.value) || 0,
+                esp_actual: parseFloat(espActualInput.value) || 0,
+                esp_diferencia: parseFloat(espDiferenciaInput.value) || 0,
+                esp_puntuacion: parseFloat(document.getElementById('esp-puntuacion').value) || 0,
+                esp_observacion: document.getElementById('esp-observacion').value,
+                // Campos de PRES
+                pres_surtido: document.getElementById('pres-surtido').checked,
+                pres_agotado: document.getElementById('pres-agotado').checked,
+                pres_faltante: document.getElementById('pres-faltante').checked,
+                pres_puntuacion: calculateCheckboxScore(presCheckboxes),
+                pres_observacion: document.getElementById('pres-observacion').value,
+                // Campos de PREC
+                prec_correcto: document.getElementById('prec-correcto').checked,
+                prec_marcado: document.getElementById('prec-marcado').checked,
+                prec_pop: document.getElementById('prec-pop').checked,
+                prec_puntuacion: calculateCheckboxScore(precCheckboxes),
+                prec_observacion: document.getElementById('prec-observacion').value,
+                // Campos de EXH
+                exh_pop: document.getElementById('exh-pop').checked,
+                exh_planograma: document.getElementById('exh-planograma').checked,
+                exh_adicional: document.getElementById('exh-adicional').checked,
+                exh_puntuacion: calculateCheckboxScore(exhCheckboxes),
+                exh_observacion: document.getElementById('exh-observacion').value,
+                // Campos de CON
+                con_speech: document.getElementById('con-speech').checked,
+                con_productos: document.getElementById('con-productos').checked,
+                con_modo: document.getElementById('con-modo').checked,
+                con_puntuacion: calculateCheckboxScore(conCheckboxes),
+                con_observacion: document.getElementById('con-observacion').value,
+                // Campos de IMA
+                ima_uniforme: document.getElementById('ima-uniforme').checked,
+                ima_carnet: document.getElementById('ima-carnet').checked,
+                ima_imagen: document.getElementById('ima-imagen').checked,
+                ima_puntuacion: calculateCheckboxScore(imaCheckboxes),
+                ima_observacion: document.getElementById('ima-observacion').value,
+                // Campos de Venta y Otros
+                venta_rd: parseFloat(document.getElementById('venta-rd').value) || 0,
+                venta_unidades: parseFloat(document.getElementById('venta-unidades').value) || 0,
+                tipo_visita: document.getElementById('tipo-visita').value,
+                asistencia: document.getElementById('asistencia').value,
+                otras_observaciones_1: document.getElementById('otras-observaciones').value,
+                // Campos de Política y Valores
+                politica: document.getElementById('politica').checked,
+                mision: document.getElementById('mision').checked,
+                vision: document.getElementById('vision').checked,
+                valores: document.getElementById('valores').checked,
+                otras_observaciones_2: document.getElementById('otras-observaciones-2').value,
+                // Campos de Puntos Trabajados
+                llenado: document.getElementById('llenado').checked,
+                cambio: document.getElementById('cambio').checked,
+                oportunidad: document.getElementById('oportunidad').checked,
+                entrenamiento: document.getElementById('entrenamiento').checked,
+                especifique: document.getElementById('especifique').value,
+                puntos_trabajados: document.getElementById('puntos-trabajados').value,
+                compromiso: document.getElementById('compromiso').value,
+                necesidades_con: document.getElementById('necesidades-con').value,
+                necesidades_pdv: document.getElementById('necesidades-pdv').value,
+                // Campos de Faltantes
+                faltantes: document.getElementById('faltantes').value,
+                ofertas: document.getElementById('ofertas').value,
+                que: document.getElementById('que').value,
+                quien: document.getElementById('quien').value,
+                como: document.getElementById('como').value,
+                cuando: document.getElementById('cuando').value,
+            };
+
+            try {
+                // Ruta para guardar los datos privados del usuario
+                const evaluationsCollection = collection(db, `artifacts/${appId}/users/${userId}/evaluaciones`);
+                await addDoc(evaluationsCollection, evaluationData);
+                
+                form.reset();
+                collaboratorInfo.classList.add('hidden');
+                calculateEspDiferencia();
+                
+                showModal('message-modal', "¡Evaluación guardada exitosamente!", true);
+            } catch (error) {
+                console.error("Error al guardar la evaluación:", error);
+                showModal('message-modal', "Error al guardar la evaluación. Por favor, inténtalo de nuevo.", false);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        // Función para mostrar los detalles de la evaluación
+        function displayEvaluationDetails(data) {
+            let html = `
+                <h3 class="font-bold text-lg mb-2">${data.collaborator.name} (${data.collaborator.code})</h3>
+                <p class="text-xs text-gray-500 mb-4">Posición: ${data.collaborator.position}</p>
+                <p class="text-sm font-semibold mb-2">Fecha: ${data.date ? data.date.toDate().toLocaleDateString('es-ES') : 'N/A'}</p>
+                
+                <hr class="my-4">
+
+                <div class="details-grid">
+                    <div><strong>Venta RD:</strong> ${data.venta_rd}</div>
+                    <div><strong>Venta Unidades:</strong> ${data.venta_unidades}</div>
+                </div>
+
+                <hr class="my-4">
+                
+                <div class="details-grid">
+                    <div><strong>Tipo Visita:</strong> ${data.tipo_visita}</div>
+                    <div><strong>Asistencia:</strong> ${data.asistencia}</div>
+                    <div class="col-span-2"><strong>Otras Observaciones:</strong> ${data.otras_observaciones_1 || 'N/A'}</div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="details-grid">
+                    <div><strong>Anterior:</strong> ${data.esp_anterior}</div>
+                    <div><strong>Actual:</strong> ${data.esp_actual}</div>
+                    <div><strong>Diferencia:</strong> ${data.esp_diferencia}</div>
+                    <div><strong>Puntuación:</strong> ${data.esp_puntuacion}</div>
+                    <div class="col-span-2"><strong>Observación:</strong> ${data.esp_observacion || 'N/A'}</div>
+                </div>
+
+                <hr class="my-4">
+                
+                <div class="details-grid">
+                    <div><strong>Puntuación Presencia:</strong> ${data.pres_puntuacion}</div>
+                    <div><strong>Puntuación Precios:</strong> ${data.prec_puntuacion}</div>
+                    <div><strong>Puntuación Exhibición:</strong> ${data.exh_puntuacion}</div>
+                    <div><strong>Puntuación Conocimiento:</strong> ${data.con_puntuacion}</div>
+                    <div><strong>Puntuación Imagen:</strong> ${data.ima_puntuacion}</div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="details-grid">
+                    <div class="col-span-2"><strong>Faltantes:</strong> ${data.faltantes || 'N/A'}</div>
+                    <div class="col-span-2"><strong>Ofertas:</strong> ${data.ofertas || 'N/A'}</div>
+                    <div class="col-span-2"><strong>Qué:</strong> ${data.que || 'N/A'}</div>
+                    <div class="col-span-2"><strong>Quién:</strong> ${data.quien || 'N/A'}</div>
+                    <div class="col-span-2"><strong>Cómo:</strong> ${data.como || 'N/A'}</div>
+                    <div class="col-span-2"><strong>Cuándo:</strong> ${data.cuando || 'N/A'}</div>
+                </div>
+            `;
+            detailsContent.innerHTML = html;
+            showModal('details-modal');
+        }
+
+        // Configurar el listener en tiempo real
+        function setupRealtimeListener() {
+            const evaluationsCollection = collection(db, `artifacts/${appId}/users/${userId}/evaluaciones`);
+            onSnapshot(evaluationsCollection, (snapshot) => {
+                evaluationsList.innerHTML = '';
+                if (snapshot.empty) {
+                    evaluationsList.innerHTML = `<p class="text-center text-gray-500">No hay evaluaciones registradas.</p>`;
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const evaluationItem = document.createElement('div');
+                    evaluationItem.className = 'list-item';
+                    evaluationItem.dataset.docId = doc.id;
+                    const date = data.date ? data.date.toDate().toLocaleDateString('es-ES') : 'Fecha no disponible';
+                    evaluationItem.innerHTML = `
+                        <p class="text-sm text-gray-800 font-semibold">${data.collaborator.name} (${data.collaborator.code})</p>
+                        <p class="text-xs text-gray-500 mt-1">Evaluación del ${date}</p>
+                        <p class="text-xs text-gray-500 mt-1">Visita: ${data.tipo_visita} | Asistencia: ${data.asistencia}</p>
+                    `;
+                    evaluationsList.appendChild(evaluationItem);
+                });
+            }, (error) => {
+                console.error("Error al escuchar evaluaciones:", error);
+                evaluationsList.innerHTML = `<p class="text-center text-red-500">Error al cargar evaluaciones. Inténtalo de nuevo.</p>`;
+            });
+        }
+        
+        // Listener para abrir el modal de detalles
+        evaluationsList.addEventListener('click', async (e) => {
+            const listItem = e.target.closest('.list-item');
+            if (!listItem) return;
+
+            loadingOverlay.classList.remove('hidden');
+            const docId = listItem.dataset.docId;
+
+            try {
+                const evaluationsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/evaluaciones`);
+                const docRef = doc(evaluationsCollectionRef, docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    displayEvaluationDetails(docSnap.data());
+                } else {
+                    showModal('message-modal', "Documento no encontrado.", false);
+                }
+            } catch (error) {
+                console.error("Error al obtener el documento:", error);
+                showModal('message-modal', "Error al cargar los detalles.", false);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
