@@ -10,7 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            background-color: #f3ff6;
         }
         .form-section {
             @apply bg-white p-6 rounded-2xl shadow-lg mb-6;
@@ -61,8 +61,8 @@
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
 <script type="module">
-    // Este script solo inicializa la app de Firebase. No es estrictamente necesario si el segundo script lo hace.
-    // Lo dejamos como estaba, pero la lógica de la app real está en el segundo script.
+    // NOTA: Este script no es estrictamente necesario, ya que el segundo script inicializa Firebase.
+    // Lo mantengo por si tienes otra lógica en él. Si se elimina, el segundo script funcionará igual.
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
 
@@ -77,7 +77,7 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    // const analytics = getAnalytics(app); // Se comenta si no se usa para evitar warnings
 </script>
     <div id="message-modal" class="modal">
         <div class="modal-content text-center">
@@ -131,20 +131,20 @@
                         <div class="form-group grid grid-cols-2 gap-4">
                             <div>
                                 <label for="esp-anterior">Anterior</label>
-                                <input type="number" id="esp-anterior" class="esp-input">
+                                <input type="number" id="esp-anterior" class="esp-input" value="0">
                             </div>
                             <div>
                                 <label for="esp-actual">Actual</label>
-                                <input type="number" id="esp-actual" class="esp-input">
+                                <input type="number" id="esp-actual" class="esp-input" value="0">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="esp-diferencia">Diferencia</label>
-                            <input type="number" id="esp-diferencia" readonly class="bg-gray-200">
+                            <input type="number" id="esp-diferencia" readonly class="bg-gray-200" value="0">
                         </div>
                         <div class="form-group">
                             <label for="esp-puntuacion">Puntuación</label>
-                            <input type="number" step="0.01" id="esp-puntuacion">
+                            <input type="number" step="0.01" id="esp-puntuacion" value="0">
                         </div>
                         <div class="form-group">
                             <label for="esp-observacion">Observación</label>
@@ -170,7 +170,7 @@
                         </div>
                         <div class="form-group mt-4">
                             <label for="pres-puntuacion">Puntuación</label>
-                            <input type="number" id="pres-puntuacion" readonly class="bg-gray-200">
+                            <input type="number" id="pres-puntuacion" readonly class="bg-gray-200" value="0">
                         </div>
                         <div class="form-group">
                             <label for="pres-observacion">Observación</label>
@@ -196,7 +196,7 @@
                         </div>
                         <div class="form-group mt-4">
                             <label for="prec-puntuacion">Puntuación</label>
-                            <input type="number" id="prec-puntuacion" readonly class="bg-gray-200">
+                            <input type="number" id="prec-puntuacion" readonly class="bg-gray-200" value="0">
                         </div>
                         <div class="form-group">
                             <label for="prec-observacion">Observación</label>
@@ -222,7 +222,7 @@
                         </div>
                         <div class="form-group mt-4">
                             <label for="exh-puntuacion">Puntuación</label>
-                            <input type="number" id="exh-puntuacion" readonly class="bg-gray-200">
+                            <input type="number" id="exh-puntuacion" readonly class="bg-gray-200" value="0">
                         </div>
                         <div class="form-group">
                             <label for="exh-observacion">Observación</label>
@@ -248,7 +248,7 @@
                         </div>
                         <div class="form-group mt-4">
                             <label for="con-puntuacion">Puntuación</label>
-                            <input type="number" id="con-puntuacion" readonly class="bg-gray-200">
+                            <input type="number" id="con-puntuacion" readonly class="bg-gray-200" value="0">
                         </div>
                         <div class="form-group">
                             <label for="con-observacion">Observación</label>
@@ -274,7 +274,7 @@
                         </div>
                         <div class="form-group mt-4">
                             <label for="ima-puntuacion">Puntuación</label>
-                            <input type="number" id="ima-puntuacion" readonly class="bg-gray-200">
+                            <input type="number" id="ima-puntuacion" readonly class="bg-gray-200" value="0">
                         </div>
                         <div class="form-group">
                             <label for="ima-observacion">Observación</label>
@@ -287,11 +287,11 @@
                         <div class="form-group grid grid-cols-2 gap-4">
                             <div>
                                 <label for="venta-rd">Venta RD</label>
-                                <input type="number" id="venta-rd">
+                                <input type="number" id="venta-rd" value="0">
                             </div>
                             <div>
                                 <label for="venta-unidades">Venta Unidades</label>
-                                <input type="number" id="venta-unidades">
+                                <input type="number" id="venta-unidades" value="0">
                             </div>
                         </div>
                     </div>
@@ -345,7 +345,7 @@
                             <textarea id="otras-observaciones-2" rows="2"></textarea>
                         </div>
                     </div>
-                    
+
                     <div class="form-section p-4 bg-gray-50 shadow-none">
                         <h3 class="font-semibold text-gray-600 mb-2">10. Puntos de Desarrollo</h3>
                         <div class="form-group checkbox-group grid grid-cols-2 gap-2">
@@ -378,463 +378,4 @@
                     <div class="form-section p-4 bg-gray-50 shadow-none">
                         <h3 class="font-semibold text-gray-600 mb-2">12. Puntos Trabajados</h3>
                         <div class="form-group">
-                            <textarea id="puntos-trabajados" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">13. Compromiso</h3>
-                        <div class="form-group">
-                            <textarea id="compromiso" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">14. Necesidades Consultoras</h3>
-                        <div class="form-group">
-                            <textarea id="necesidades-con" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">15. Necesidades Punto de Venta</h3>
-                        <div class="form-group">
-                            <textarea id="necesidades-pdv" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">16. Pendientes</h3>
-                        <div class="form-group grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="faltantes">Faltantes</label>
-                                <textarea id="faltantes" rows="2"></textarea>
-                            </div>
-                            <div>
-                                <label for="ofertas">Ofertas</label>
-                                <textarea id="ofertas" rows="2"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">17. Puntos de Acción</h3>
-                        <div class="form-group grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="que">Qué</label>
-                                <textarea id="que" rows="2"></textarea>
-                            </div>
-                            <div>
-                                <label for="quien">Quién</label>
-                                <textarea id="quien" rows="2"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="como">Cómo</label>
-                                <textarea id="como" rows="2"></textarea>
-                            </div>
-                            <div>
-                                <label for="cuando">Cuándo</label>
-                                <textarea id="cuando" rows="2"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-primary">Guardar Evaluación</button>
-                </form>
-            </div>
-
-            <div>
-                <div class="form-section">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Evaluaciones Registradas</h2>
-                    <div id="evaluations-list" class="space-y-4">
-                        <p class="text-center text-gray-500">Cargando evaluaciones...</p>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Gestión de Colaboradores</h2>
-                    
-                    <form id="collaborator-form" class="space-y-4">
-                        <input type="hidden" id="collab-doc-id">
-                        <div class="form-group">
-                            <label for="collab-name">Nombre</label>
-                            <input type="text" id="collab-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="collab-code-input">Código</label>
-                            <input type="text" id="collab-code-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="collab-position-input">Posición</label>
-                            <input type="text" id="collab-position-input" required>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button type="submit" id="add-collab-btn" class="btn-primary flex-1">Agregar</button>
-                            <button type="button" id="update-collab-btn" class="btn-primary flex-1 bg-green-500 hover:bg-green-600 hidden">Actualizar</button>
-                            <button type="button" id="cancel-edit-btn" class="btn-primary flex-1 bg-gray-500 hover:bg-gray-600 hidden">Cancelar</button>
-                        </div>
-                    </form>
-
-                    <div id="collaborators-list" class="space-y-2 mt-6">
-                        <p class="text-center text-gray-500">Cargando colaboradores...</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script type="module">
-        // Importaciones necesarias para AUTH, FIRESTORE y utilidades
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, addDoc, onSnapshot, collection, query, orderBy, serverTimestamp, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Configuración de tu proyecto (Copiada del primer script)
-        const firebaseConfig = {
-            apiKey: "AIzaSyD-gcLSOMmwFXGAOPkUX5K9ASScYYPr2Lk",
-            authDomain: "evaluaciones-mercadeo.firebaseapp.com",
-            projectId: "evaluaciones-mercadeo",
-            storageBucket: "evaluaciones-mercadeo.firebasestorage.app",
-            messagingSenderId: "193530628861",
-            appId: "1:193530628861:web:b79824793a72973c7c8c94",
-            measurementId: "G-T7MN6W8XZ5"
-        };
-
-        // Inicialización de Firebase: APP, AUTH y FIRESTORE
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        // Variables globales
-        let userId = 'Cargando...'; 
-        let collaborators = {}; // Objeto para almacenar colaboradores {nombre: {id: docId, ...datos}}
-
-        // Referencias del DOM (tu código)
-        const collaboratorSelect = document.getElementById('collaborator');
-        const collaboratorInfo = document.getElementById('collaborator-info');
-        const collabCodeSpan = document.getElementById('collab-code');
-        const collabPositionSpan = document.getElementById('collab-position');
-        const form = document.getElementById('evaluation-form');
-        const evaluationsList = document.getElementById('evaluations-list');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const userIdSpan = document.getElementById('user-id');
-        
-        // Modales
-        const messageModal = document.getElementById('message-modal');
-        const modalText = document.getElementById('modal-text');
-        const modalIcon = document.getElementById('modal-icon');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const detailsModal = document.getElementById('details-modal');
-        const detailsContent = document.getElementById('details-content');
-        const closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
-
-        // Puntos de cálculo dinámicos
-        const espAnteriorInput = document.getElementById('esp-anterior');
-        const espActualInput = document.getElementById('esp-actual');
-        const espDiferenciaInput = document.getElementById('esp-diferencia');
-        const presCheckboxes = document.querySelectorAll('.pres-checkbox');
-        const presPuntuacionInput = document.getElementById('pres-puntuacion');
-        const precCheckboxes = document.querySelectorAll('.prec-checkbox');
-        const precPuntuacionInput = document.getElementById('prec-puntuacion');
-        const exhCheckboxes = document.querySelectorAll('.exh-checkbox');
-        const exhPuntuacionInput = document.getElementById('exh-puntuacion');
-        const conCheckboxes = document.querySelectorAll('.con-checkbox');
-        const conPuntuacionInput = document.getElementById('con-puntuacion');
-        const imaCheckboxes = document.querySelectorAll('.ima-checkbox');
-        const imaPuntuacionInput = document.getElementById('ima-puntuacion');
-
-        // Referencias para la gestión de colaboradores
-        const collaboratorForm = document.getElementById('collaborator-form');
-        const collabNameInput = document.getElementById('collab-name');
-        const collabCodeInput = document.getElementById('collab-code-input');
-        const collabPositionInput = document.getElementById('collab-position-input');
-        const addCollabBtn = document.getElementById('add-collab-btn');
-        const updateCollabBtn = document.getElementById('update-collab-btn');
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        const collabDocIdInput = document.getElementById('collab-doc-id');
-        const collaboratorsListDiv = document.getElementById('collaborators-list');
-        
-        // *******************************************************************
-        // LÓGICA DE LA APLICACIÓN (Carga y Autenticación)
-        // *******************************************************************
-
-        // Función para mostrar y ocultar modales (tu función original)
-        function showMessageModal(text, isError = false) {
-            modalText.textContent = text;
-            modalIcon.className = isError 
-                ? 'fas fa-times-circle text-red-500' 
-                : 'fas fa-check-circle text-green-500';
-            messageModal.classList.remove('hidden');
-        }
-
-        // Función para cargar colaboradores (CORREGIDA)
-        function loadCollaborators() {
-            const collaboratorsRef = collection(db, "colaboradores");
-            const q = query(collaboratorsRef, orderBy("nombre", "asc"));
-        
-            // Usamos onSnapshot para escuchar en tiempo real
-            onSnapshot(q, (snapshot) => {
-                collaborators = {}; 
-                collaboratorSelect.innerHTML = '<option value="">Selecciona un colaborador</option>';
-                collaboratorsListDiv.innerHTML = ''; // Limpia la lista de gestión
-
-                if (snapshot.empty) {
-                    collaboratorSelect.innerHTML += '<option disabled>No hay colaboradores</option>';
-                    collaboratorsListDiv.innerHTML = '<p class="text-center text-gray-500">No hay colaboradores registrados.</p>';
-                    return;
-                }
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const id = doc.id;
-                    collaborators[data.nombre] = { id, ...data }; 
-
-                    // Llenar el <select>
-                    const option = document.createElement('option');
-                    option.value = data.nombre;
-                    option.textContent = data.nombre;
-                    collaboratorSelect.appendChild(option);
-
-                    // Llenar la lista de gestión
-                    const listItem = document.createElement('div');
-                    listItem.className = 'collaborator-list-item';
-                    listItem.innerHTML = `
-                        <div>
-                            <p class="font-medium">${data.nombre}</p>
-                            <p class="text-sm text-gray-500">${data.codigo} | ${data.posicion}</p>
-                        </div>
-                        <div class="space-x-2">
-                            <button type="button" class="text-blue-500 hover:text-blue-700" onclick="window.editCollaborator('${id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="text-red-500 hover:text-red-700" onclick="window.deleteCollaborator('${id}', '${data.nombre}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                    collaboratorsListDiv.appendChild(listItem);
-                });
-            }, (error) => {
-                console.error("Error al cargar colaboradores:", error);
-                collaboratorsListDiv.innerHTML = '<p class="text-center text-red-500">Error al cargar colaboradores.</p>';
-            });
-        }
-
-        // Función para cargar evaluaciones (CORREGIDA)
-        function loadEvaluations() {
-            const evaluationsRef = collection(db, "evaluaciones");
-            const q = query(evaluationsRef, orderBy("fecha", "desc"));
-        
-            onSnapshot(q, (snapshot) => {
-                evaluationsList.innerHTML = ''; // Limpia la lista
-                
-                if (snapshot.empty) {
-                    evaluationsList.innerHTML = '<p class="text-center text-gray-500">No hay evaluaciones registradas.</p>';
-                    return;
-                }
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const listItem = document.createElement('div');
-                    listItem.className = 'list-item flex justify-between items-center';
-                    
-                    const dateDisplay = data.fecha && data.fecha.seconds 
-                        ? new Date(data.fecha.seconds * 1000).toLocaleDateString()
-                        : 'Fecha no disponible';
-
-                    listItem.innerHTML = `
-                        <span>${data.colaborador} (${dateDisplay})</span>
-                        <i class="fas fa-search-plus text-blue-500 hover:text-blue-700"></i>
-                    `;
-                    // Asume que showDetailsModal existe, si no, lo necesitarás
-                    listItem.addEventListener('click', () => showDetailsModal(data)); 
-                    evaluationsList.appendChild(listItem);
-                });
-            }, (error) => {
-                console.error("Error al cargar evaluaciones:", error);
-                evaluationsList.innerHTML = '<p class="text-center text-red-500">Error al cargar evaluaciones.</p>';
-            });
-        }
-        
-        // Función de AUTENTICACIÓN (CORREGIDA) - ¡Esto resuelve el "Cargando id de usuario"!
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Usuario autenticado (anónimo)
-                userId = user.uid;
-                userIdSpan.textContent = userId;
-                
-                // Una vez autenticado, carga los datos
-                loadCollaborators();
-                loadEvaluations();
-                
-            } else {
-                // Si no hay usuario, inicia sesión de forma anónima
-                signInAnonymously(auth)
-                    .then(() => {
-                        console.log("Inicio de sesión anónimo exitoso.");
-                    })
-                    .catch((error) => {
-                        console.error("Error en autenticación anónima:", error);
-                        userIdSpan.textContent = 'Error de Auth';
-                        showMessageModal("No se pudo iniciar sesión. Verifica tu configuración de Firebase Auth.", true);
-                    });
-            }
-        });
-
-        // *******************************************************************
-        // FUNCIONES DE GESTIÓN (Añadidas para que los botones funcionen)
-        // *******************************************************************
-
-        // Función para obtener los datos del formulario de evaluación
-        function getFormData() {
-            // ... (implementa la lógica para obtener todos los campos del formulario)
-            // Ya que es extensa, solo muestro un extracto. Asegúrate de incluir todos los campos.
-            return {
-                colaborador: collaboratorSelect.value,
-                userId: userId,
-                fecha: serverTimestamp(), // Esto almacena la fecha/hora en el servidor
-                // Datos de Espacios
-                esp_anterior: parseFloat(espAnteriorInput.value) || 0,
-                esp_actual: parseFloat(espActualInput.value) || 0,
-                // ... el resto de los 50+ campos ...
-                otras_observaciones_2: document.getElementById('otras-observaciones-2').value,
-                que: document.getElementById('que').value,
-                // ...
-            };
-        }
-
-        // 1. Guardar Evaluación
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!collaboratorSelect.value) {
-                showMessageModal("Por favor, selecciona un colaborador.", true);
-                return;
-            }
-
-            loadingOverlay.classList.remove('hidden');
-            const data = getFormData();
-            
-            try {
-                await addDoc(collection(db, "evaluaciones"), data);
-                showMessageModal("¡Evaluación guardada con éxito!");
-                form.reset(); // Limpia el formulario
-            } catch (error) {
-                console.error("Error al guardar la evaluación:", error);
-                showMessageModal("Error al guardar: " + error.message, true);
-            } finally {
-                loadingOverlay.classList.add('hidden');
-            }
-        });
-
-        // 2. Lógica para el formulario de Gestión de Colaboradores (Añadir/Actualizar)
-        collaboratorForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            loadingOverlay.classList.remove('hidden');
-
-            const collabData = {
-                nombre: collabNameInput.value.trim(),
-                codigo: collabCodeInput.value.trim(),
-                posicion: collabPositionInput.value.trim()
-            };
-
-            const docId = collabDocIdInput.value;
-
-            try {
-                if (docId) {
-                    // Actualizar
-                    await updateDoc(doc(db, "colaboradores", docId), collabData);
-                    showMessageModal(`Colaborador ${collabData.nombre} actualizado.`);
-                } else {
-                    // Agregar
-                    await addDoc(collection(db, "colaboradores"), collabData);
-                    showMessageModal(`Colaborador ${collabData.nombre} agregado.`);
-                }
-                collaboratorForm.reset();
-                cancelEditBtn.click(); // Limpia botones y docId
-            } catch (error) {
-                console.error("Error al guardar/actualizar colaborador:", error);
-                showMessageModal("Error al guardar/actualizar: " + error.message, true);
-            } finally {
-                loadingOverlay.classList.add('hidden');
-            }
-        });
-
-        // Hacemos que las funciones de Edición y Eliminación sean globales para que el HTML inyectado pueda llamarlas
-        window.editCollaborator = (id) => {
-            const collab = Object.values(collaborators).find(c => c.id === id);
-            if (collab) {
-                collabDocIdInput.value = id;
-                collabNameInput.value = collab.nombre;
-                collabCodeInput.value = collab.codigo;
-                collabPositionInput.value = collab.posicion;
-                addCollabBtn.classList.add('hidden');
-                updateCollabBtn.classList.remove('hidden');
-                cancelEditBtn.classList.remove('hidden');
-            }
-        };
-
-        window.deleteCollaborator = async (id, name) => {
-            if (confirm(`¿Estás seguro de que deseas eliminar a ${name}?`)) {
-                loadingOverlay.classList.remove('hidden');
-                try {
-                    await deleteDoc(doc(db, "colaboradores", id));
-                    showMessageModal(`Colaborador ${name} eliminado.`, false);
-                } catch (error) {
-                    console.error("Error al eliminar:", error);
-                    showMessageModal("Error al eliminar: " + error.message, true);
-                } finally {
-                    loadingOverlay.classList.add('hidden');
-                }
-            }
-        };
-
-        // 3. Lógica para cálculos de Espacios y Checkboxes (Ejemplo, necesitas replicar esto para todas las secciones)
-        function calculateDiferencia() {
-            const anterior = parseFloat(espAnteriorInput.value) || 0;
-            const actual = parseFloat(espActualInput.value) || 0;
-            espDiferenciaInput.value = actual - anterior;
-        }
-
-        espAnteriorInput.addEventListener('input', calculateDiferencia);
-        espActualInput.addEventListener('input', calculateDiferencia);
-
-        function calculateCheckboxScore(checkboxes, scoreInput) {
-            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-            // Lógica de puntuación: Ejemplo simple (2 puntos por cada check)
-            scoreInput.value = checkedCount * 2;
-        }
-        
-        presCheckboxes.forEach(cb => cb.addEventListener('change', () => calculateCheckboxScore(presCheckboxes, presPuntuacionInput)));
-        precCheckboxes.forEach(cb => cb.addEventListener('change', () => calculateCheckboxScore(precCheckboxes, precPuntuacionInput)));
-        // ... (debes añadir esto para exhCheckboxes, conCheckboxes, y imaCheckboxes) ...
-
-        // Lógica de cierre de modales
-        closeModalBtn.addEventListener('click', () => messageModal.classList.add('hidden'));
-        closeDetailsModalBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
-        cancelEditBtn.addEventListener('click', () => {
-            collaboratorForm.reset();
-            collabDocIdInput.value = '';
-            addCollabBtn.classList.remove('hidden');
-            updateCollabBtn.classList.add('hidden');
-            cancelEditBtn.classList.add('hidden');
-        });
-        
-        // Debes definir la función showDetailsModal para que las evaluaciones sean visibles
-        function showDetailsModal(data) {
-             // Esta función es crucial para ver el detalle. Debe tomar los datos y construir el HTML de 'details-content'.
-             detailsContent.innerHTML = `
-                <h2 class="text-2xl font-bold mb-4">${data.colaborador}</h2>
-                <p class="text-sm text-gray-500 mb-6">Evaluado el ${new Date(data.fecha.seconds * 1000).toLocaleDateString()}</p>
-                <div class="details-grid">
-                    <div><span class="font-semibold">Código:</span> ${collaborators[data.colaborador]?.codigo || 'N/A'}</div>
-                    <div><span class="font-semibold">Posición:</span> ${collaborators[data.colaborador]?.posicion || 'N/A'}</div>
-                    </div>
-                `;
-             detailsModal.classList.remove('hidden');
-        }
-        window.showDetailsModal = showDetailsModal; // Hazla global
-    </script>
-</body>
-</html>
+                            <textarea
