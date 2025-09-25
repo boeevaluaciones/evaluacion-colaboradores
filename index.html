@@ -61,10 +61,9 @@
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
 <script type="module">
-    // NOTA: Este script no es estrictamente necesario, ya que el segundo script inicializa Firebase.
-    // Lo mantengo por si tienes otra lógica en él. Si se elimina, el segundo script funcionará igual.
+    // Script de configuración inicial de Firebase (mantenido por si es necesario)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
+    // import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js"; // Comentado por brevedad y si no se usa
 
     const firebaseConfig = {
         apiKey: "AIzaSyD-gcLSOMmwFXGAOPkUX5K9ASScYYPr2Lk",
@@ -77,7 +76,6 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    // const analytics = getAnalytics(app); // Se comenta si no se usa para evitar warnings
 </script>
     <div id="message-modal" class="modal">
         <div class="modal-content text-center">
@@ -112,13 +110,15 @@
             <div class="form-section">
                 <form id="evaluation-form" class="space-y-6">
                     <h2 class="text-xl font-semibold text-gray-700 mb-4">Datos del Colaborador</h2>
-                    <div class="form-group">
-                        <label for="collaborator">Nombre Colaborador(a)</label>
-                        <select id="collaborator" required>
-                            <option value="">Selecciona un colaborador</option>
-                        </select>
+                    
+                    <div class="form-group relative">
+                        <label for="collaborator-input">Nombre Colaborador(a)</label>
+                        <input type="text" id="collaborator-input" placeholder="Escribe el nombre para buscar..." autocomplete="off" required>
+                        <input type="hidden" id="collaborator-selected-value" name="collaborator-selected-value">
+                        
+                        <div id="suggestions-list" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden">
+                            </div>
                     </div>
-
                     <div id="collaborator-info" class="text-sm text-gray-500 hidden mb-6">
                         <p><strong>Código:</strong> <span id="collab-code"></span></p>
                         <p><strong>Posición:</strong> <span id="collab-position"></span></p>
@@ -267,115 +267,3 @@
                                 <input type="checkbox" id="ima-carnet" class="ima-checkbox">
                                 <label for="ima-carnet" class="ml-2">Carnet</label>
                             </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="ima-imagen" class="ima-checkbox">
-                                <label for="ima-imagen" class="ml-2">Imagen</label>
-                            </div>
-                        </div>
-                        <div class="form-group mt-4">
-                            <label for="ima-puntuacion">Puntuación</label>
-                            <input type="number" id="ima-puntuacion" readonly class="bg-gray-200" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="ima-observacion">Observación</label>
-                            <textarea id="ima-observacion" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">7. Ventas del Mes</h3>
-                        <div class="form-group grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="venta-rd">Venta RD</label>
-                                <input type="number" id="venta-rd" value="0">
-                            </div>
-                            <div>
-                                <label for="venta-unidades">Venta Unidades</label>
-                                <input type="number" id="venta-unidades" value="0">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">8. Reporte de Visita</h3>
-                        <div class="form-group grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="tipo-visita">Tipo Visita</label>
-                                <select id="tipo-visita">
-                                    <option>OBJETIVO</option>
-                                    <option>SEGUIMIENTO</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="asistencia">Asistencia</label>
-                                <select id="asistencia">
-                                    <option>EN PUESTO</option>
-                                    <option>FUERA DE PUESTO</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group mt-4">
-                            <label for="otras-observaciones">Otras Observaciones</label>
-                            <textarea id="otras-observaciones" rows="3"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">9. Política y Valores</h3>
-                        <div class="form-group checkbox-group grid grid-cols-2 gap-2">
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="politica">
-                                <label for="politica" class="ml-2">Política</label>
-                            </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="mision">
-                                <label for="mision" class="ml-2">Misión</label>
-                            </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="vision">
-                                <label for="vision" class="ml-2">Visión</label>
-                            </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="valores">
-                                <label for="valores" class="ml-2">Valores</label>
-                            </div>
-                        </div>
-                        <div class="form-group mt-4">
-                            <label for="otras-observaciones-2">Otras Observaciones</label>
-                            <textarea id="otras-observaciones-2" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">10. Puntos de Desarrollo</h3>
-                        <div class="form-group checkbox-group grid grid-cols-2 gap-2">
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="llenado">
-                                <label for="llenado" class="ml-2">Llenado Planificador</label>
-                            </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="cambio">
-                                <label for="cambio" class="ml-2">Cambio Ruta/Horario</label>
-                            </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="oportunidad">
-                                <label for="oportunidad" class="ml-2">Oportunidad Mejora</label>
-                            </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="entrenamiento">
-                                <label for="entrenamiento" class="ml-2">Entrenamiento Producto</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">11. Especifique</h3>
-                        <div class="form-group">
-                            <textarea id="especifique" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section p-4 bg-gray-50 shadow-none">
-                        <h3 class="font-semibold text-gray-600 mb-2">12. Puntos Trabajados</h3>
-                        <div class="form-group">
-                            <textarea
