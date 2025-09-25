@@ -1,7 +1,18 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="es">
 <head>
+   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+<script> 
+  const firebaseConfig = {
+  apiKey: "AIzaSyD-gcLSOMmwFXGAOPkUX5K9ASScYYPr2Lk",
+  authDomain: "evaluaciones-mercadeo.firebaseapp.com",
+  projectId: "evaluaciones-mercadeo",
+  storageBucket: "evaluaciones-mercadeo.firebasestorage.app",
+  messagingSenderId: "193530628861",
+  appId: "1:193530628861:web:b79824793a72973c7c8c94",
+  measurementId: "G-T7MN6W8XZ5"
+};
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evaluación de Colaboradores</title>
@@ -63,7 +74,29 @@
     </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyD-gcLSOMmwFXGAOPkUX5K9ASScYYPr2Lk",
+    authDomain: "evaluaciones-mercadeo.firebaseapp.com",
+    projectId: "evaluaciones-mercadeo",
+    storageBucket: "evaluaciones-mercadeo.firebasestorage.app",
+    messagingSenderId: "193530628861",
+    appId: "1:193530628861:web:b79824793a72973c7c8c94",
+    measurementId: "G-T7MN6W8XZ5"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
     <!-- Modal de mensaje general -->
     <div id="message-modal" class="modal">
         <div class="modal-content text-center">
