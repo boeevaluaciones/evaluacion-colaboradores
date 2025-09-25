@@ -515,6 +515,8 @@
         // Variables globales
         let userId = 'Cargando...'; 
         let collaborators = {}; // Objeto para almacenar colaboradores {nombre: {id: docId, ...datos}}
+        // CORRECCIÓN 1: Declaración de la variable global para la exportación
+        let allEvaluationsData = []; 
 
         // Referencias del DOM (tu código)
         const collaboratorSelect = document.getElementById('collaborator');
@@ -662,17 +664,17 @@
             return [headerRow, ...dataRows].join('\n');
         }
 
-        // Función para cargar evaluaciones (CORREGIDA)
+        // Función para cargar evaluaciones (ACTUALIZADA con Corrección 2)
         function loadEvaluations() {
             const evaluationsRef = collection(db, "evaluaciones");
             const q = query(evaluationsRef, orderBy("fecha", "desc"));
         
-                                onSnapshot(q, (snapshot) => {
+            onSnapshot(q, (snapshot) => {
                 evaluationsList.innerHTML = '';
                 loadingOverlay.classList.add('hidden');
 
-                // 1. ALMACENAR DATOS
-                allEvaluationsData = []; // Limpiar antes de llenar
+                // CORRECCIÓN 2.A: Vaciar el array global en cada snapshot
+                allEvaluationsData = []; 
                 
                 if (snapshot.empty) {
                     exportarExcelBtn.disabled = true; // Deshabilitar si no hay datos
@@ -683,13 +685,23 @@
                 exportarExcelBtn.disabled = false; // Habilitar si hay datos
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    const listItem = document.createElement('div');
-                    listItem.className = 'list-item flex justify-between items-center';
+                    const docId = doc.id;
                     
                     const dateDisplay = data.fecha && data.fecha.seconds 
                         ? new Date(data.fecha.seconds * 1000).toLocaleDateString()
                         : 'Fecha no disponible';
 
+                    // CORRECCIÓN 2.B: Llenar el array global para exportación
+                    // Se clona el objeto data y se añaden campos clave
+                    allEvaluationsData.push({
+                        doc_id: docId,
+                        fecha_registro: dateDisplay, 
+                        ...data
+                    });
+
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-item flex justify-between items-center';
+                    
                     listItem.innerHTML = `
                         <span>${data.colaborador} (${dateDisplay})</span>
                         <i class="fas fa-search-plus text-blue-500 hover:text-blue-700"></i>
@@ -1023,10 +1035,11 @@
         }
         window.showDetailsModal = showDetailsModal; // Hazla global
 		// *******************************************************************
-        // NUEVA LÓGICA: EXPORTAR A EXCEL (CSV)
+        // LÓGICA: EXPORTAR A EXCEL (CSV) - Ahora usa la variable global llenada.
         // *******************************************************************
 
         exportarExcelBtn.addEventListener('click', () => {
+            // Se usa la variable global allEvaluationsData
             if (allEvaluationsData.length === 0) {
                 showMessageModal("No hay datos de evaluaciones para exportar.", true);
                 return;
@@ -1036,24 +1049,20 @@
                 // 1. Convertir los datos a formato CSV
                 const csvString = convertToCSV(allEvaluationsData);
 
-                // 2. Crear un objeto Blob (Binary Large Object) para el archivo
-                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-                
-                // Agregamos el "Byte Order Mark" (BOM) para que Excel reconozca el UTF-8 (acentos, ñ)
+                // 2. Crear un objeto Blob con el BOM (Byte Order Mark) para UTF-8 en Excel
                 const BOM = '\uFEFF'; 
                 const csvWithBOM = BOM + csvString;
 
                 const blobFinal = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
 
 
-                // 3. Crear un enlace de descarga (elemento 'a')
+                // 3. Crear y simular clic en un enlace de descarga
                 const url = URL.createObjectURL(blobFinal);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
                 a.download = `Evaluaciones_${new Date().toISOString().slice(0, 10)}.csv`; // Nombre del archivo
 
-                // 4. Simular clic y liberar el objeto URL
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -1063,7 +1072,7 @@
 
             } catch (error) {
                 console.error("Error al exportar los datos:", error);
-                showMessageModal("Error al intentar exportar la tabla.", true);
+                showMessageModal("Error al intentar exportar la tabla. " + error.message, true);
             }
         });
     </script>
