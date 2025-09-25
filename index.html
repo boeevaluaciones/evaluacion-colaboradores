@@ -61,9 +61,10 @@
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
 <script type="module">
-    // Script de configuración inicial de Firebase (mantenido por si es necesario)
+    // NOTA: Este script no es estrictamente necesario, ya que el segundo script inicializa Firebase.
+    // Lo mantengo por si tienes otra lógica en él. Si se elimina, el segundo script funcionará igual.
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    // import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js"; // Comentado por brevedad y si no se usa
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD-gcLSOMmwFXGAOPkUX5K9ASScYYPr2Lk",
@@ -76,6 +77,7 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    // const analytics = getAnalytics(app); // Se comenta si no se usa para evitar warnings
 </script>
     <div id="message-modal" class="modal">
         <div class="modal-content text-center">
@@ -110,15 +112,13 @@
             <div class="form-section">
                 <form id="evaluation-form" class="space-y-6">
                     <h2 class="text-xl font-semibold text-gray-700 mb-4">Datos del Colaborador</h2>
-                    
-                    <div class="form-group relative">
-                        <label for="collaborator-input">Nombre Colaborador(a)</label>
-                        <input type="text" id="collaborator-input" placeholder="Escribe el nombre para buscar..." autocomplete="off" required>
-                        <input type="hidden" id="collaborator-selected-value" name="collaborator-selected-value">
-                        
-                        <div id="suggestions-list" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden">
-                            </div>
+                    <div class="form-group">
+                        <label for="collaborator">Nombre Colaborador(a)</label>
+                        <select id="collaborator" required>
+                            <option value="">Selecciona un colaborador</option>
+                        </select>
                     </div>
+
                     <div id="collaborator-info" class="text-sm text-gray-500 hidden mb-6">
                         <p><strong>Código:</strong> <span id="collab-code"></span></p>
                         <p><strong>Posición:</strong> <span id="collab-position"></span></p>
@@ -267,3 +267,717 @@
                                 <input type="checkbox" id="ima-carnet" class="ima-checkbox">
                                 <label for="ima-carnet" class="ml-2">Carnet</label>
                             </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="ima-imagen" class="ima-checkbox">
+                                <label for="ima-imagen" class="ml-2">Imagen</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="ima-puntuacion">Puntuación</label>
+                            <input type="number" id="ima-puntuacion" readonly class="bg-gray-200" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="ima-observacion">Observación</label>
+                            <textarea id="ima-observacion" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">7. Ventas del Mes</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="venta-rd">Venta RD</label>
+                                <input type="number" id="venta-rd" value="0">
+                            </div>
+                            <div>
+                                <label for="venta-unidades">Venta Unidades</label>
+                                <input type="number" id="venta-unidades" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">8. Reporte de Visita</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="tipo-visita">Tipo Visita</label>
+                                <select id="tipo-visita">
+                                    <option>OBJETIVO</option>
+                                    <option>SEGUIMIENTO</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="asistencia">Asistencia</label>
+                                <select id="asistencia">
+                                    <option>EN PUESTO</option>
+                                    <option>FUERA DE PUESTO</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="otras-observaciones">Otras Observaciones</label>
+                            <textarea id="otras-observaciones" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">9. Política y Valores</h3>
+                        <div class="form-group checkbox-group grid grid-cols-2 gap-2">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="politica">
+                                <label for="politica" class="ml-2">Política</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="mision">
+                                <label for="mision" class="ml-2">Misión</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="vision">
+                                <label for="vision" class="ml-2">Visión</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="valores">
+                                <label for="valores" class="ml-2">Valores</label>
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="otras-observaciones-2">Otras Observaciones</label>
+                            <textarea id="otras-observaciones-2" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">10. Puntos de Desarrollo</h3>
+                        <div class="form-group checkbox-group grid grid-cols-2 gap-2">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="llenado">
+                                <label for="llenado" class="ml-2">Llenado Planificador</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="cambio">
+                                <label for="cambio" class="ml-2">Cambio Ruta/Horario</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="oportunidad">
+                                <label for="oportunidad" class="ml-2">Oportunidad Mejora</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="entrenamiento">
+                                <label for="entrenamiento" class="ml-2">Entrenamiento Producto</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">11. Especifique</h3>
+                        <div class="form-group">
+                            <textarea id="especifique" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">12. Puntos Trabajados</h3>
+                        <div class="form-group">
+                            <textarea id="puntos-trabajados" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">13. Compromiso</h3>
+                        <div class="form-group">
+                            <textarea id="compromiso" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">14. Necesidades Consultoras</h3>
+                        <div class="form-group">
+                            <textarea id="necesidades-con" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">15. Necesidades Punto de Venta</h3>
+                        <div class="form-group">
+                            <textarea id="necesidades-pdv" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">16. Pendientes</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="faltantes">Faltantes</label>
+                                <textarea id="faltantes" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label for="ofertas">Ofertas</label>
+                                <textarea id="ofertas" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section p-4 bg-gray-50 shadow-none">
+                        <h3 class="font-semibold text-gray-600 mb-2">17. Puntos de Acción</h3>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="que">Qué</label>
+                                <textarea id="que" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label for="quien">Quién</label>
+                                <textarea id="quien" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="como">Cómo</label>
+                                <textarea id="como" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label for="cuando">Cuándo</label>
+                                <textarea id="cuando" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Guardar Evaluación</button>
+                </form>
+            </div>
+
+            <div>
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Evaluaciones Registradas</h2>
+                    <div id="evaluations-list" class="space-y-4">
+                        <p class="text-center text-gray-500">Cargando evaluaciones...</p>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Gestión de Colaboradores</h2>
+                    
+                    <form id="collaborator-form" class="space-y-4">
+                        <input type="hidden" id="collab-doc-id">
+                        <div class="form-group">
+                            <label for="collab-name">Nombre</label>
+                            <input type="text" id="collab-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="collab-code-input">Código</label>
+                            <input type="text" id="collab-code-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="collab-position-input">Posición</label>
+                            <input type="text" id="collab-position-input" required>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="submit" id="add-collab-btn" class="btn-primary flex-1">Agregar</button>
+                            <button type="button" id="update-collab-btn" class="btn-primary flex-1 bg-green-500 hover:bg-green-600 hidden">Actualizar</button>
+                            <button type="button" id="cancel-edit-btn" class="btn-primary flex-1 bg-gray-500 hover:bg-gray-600 hidden">Cancelar</button>
+                        </div>
+                    </form>
+
+                    <div id="collaborators-list" class="space-y-2 mt-6">
+                        <p class="text-center text-gray-500">Cargando colaboradores...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        // Importaciones necesarias para AUTH, FIRESTORE y utilidades
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, addDoc, onSnapshot, collection, query, orderBy, serverTimestamp, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuración de tu proyecto (Copiada del primer script)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-gcLSOMmwFXGAOPkUX5K9ASScYYPr2Lk",
+            authDomain: "evaluaciones-mercadeo.firebaseapp.com",
+            projectId: "evaluaciones-mercadeo",
+            storageBucket: "evaluaciones-mercadeo.firebasestorage.app",
+            messagingSenderId: "193530628861",
+            appId: "1:193530628861:web:b79824793a72973c7c8c94",
+            measurementId: "G-T7MN6W8XZ5"
+        };
+
+        // Inicialización de Firebase: APP, AUTH y FIRESTORE
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // Variables globales
+        let userId = 'Cargando...'; 
+        let collaborators = {}; // Objeto para almacenar colaboradores {nombre: {id: docId, ...datos}}
+
+        // Referencias del DOM (tu código)
+        const collaboratorSelect = document.getElementById('collaborator');
+        const collaboratorInfo = document.getElementById('collaborator-info');
+        const collabCodeSpan = document.getElementById('collab-code');
+        const collabPositionSpan = document.getElementById('collab-position');
+        const form = document.getElementById('evaluation-form');
+        const evaluationsList = document.getElementById('evaluations-list');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const userIdSpan = document.getElementById('user-id');
+        
+        // Modales
+        const messageModal = document.getElementById('message-modal');
+        const modalText = document.getElementById('modal-text');
+        const modalIcon = document.getElementById('modal-icon');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const detailsModal = document.getElementById('details-modal');
+        const detailsContent = document.getElementById('details-content');
+        const closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
+
+        // Puntos de cálculo dinámicos
+        const espAnteriorInput = document.getElementById('esp-anterior');
+        const espActualInput = document.getElementById('esp-actual');
+        const espDiferenciaInput = document.getElementById('esp-diferencia');
+        
+        // Checkboxes y Puntuaciones (Secciones 2 a 6)
+        const presCheckboxes = document.querySelectorAll('.pres-checkbox');
+        const presPuntuacionInput = document.getElementById('pres-puntuacion');
+        const precCheckboxes = document.querySelectorAll('.prec-checkbox');
+        const precPuntuacionInput = document.getElementById('prec-puntuacion');
+        const exhCheckboxes = document.querySelectorAll('.exh-checkbox');
+        const exhPuntuacionInput = document.getElementById('exh-puntuacion');
+        const conCheckboxes = document.querySelectorAll('.con-checkbox');
+        const conPuntuacionInput = document.getElementById('con-puntuacion');
+        const imaCheckboxes = document.querySelectorAll('.ima-checkbox');
+        const imaPuntuacionInput = document.getElementById('ima-puntuacion');
+
+        // Referencias para la gestión de colaboradores
+        const collaboratorForm = document.getElementById('collaborator-form');
+        const collabNameInput = document.getElementById('collab-name');
+        const collabCodeInput = document.getElementById('collab-code-input');
+        const collabPositionInput = document.getElementById('collab-position-input');
+        const addCollabBtn = document.getElementById('add-collab-btn');
+        const updateCollabBtn = document.getElementById('update-collab-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const collabDocIdInput = document.getElementById('collab-doc-id');
+        const collaboratorsListDiv = document.getElementById('collaborators-list');
+        
+        // *******************************************************************
+        // LÓGICA DE LA APLICACIÓN (Carga y Autenticación)
+        // *******************************************************************
+
+        // Función para mostrar y ocultar modales (tu función original)
+        function showMessageModal(text, isError = false) {
+            modalText.textContent = text;
+            modalIcon.className = isError 
+                ? 'fas fa-times-circle text-red-500' 
+                : 'fas fa-check-circle text-green-500';
+            messageModal.classList.remove('hidden');
+        }
+
+        // Función para cargar colaboradores (CORREGIDA)
+        function loadCollaborators() {
+            const collaboratorsRef = collection(db, "colaboradores");
+            const q = query(collaboratorsRef, orderBy("nombre", "asc"));
+        
+            // Usamos onSnapshot para escuchar en tiempo real
+            onSnapshot(q, (snapshot) => {
+                collaborators = {}; 
+                collaboratorSelect.innerHTML = '<option value="">Selecciona un colaborador</option>';
+                collaboratorsListDiv.innerHTML = ''; // Limpia la lista de gestión
+
+                if (snapshot.empty) {
+                    collaboratorSelect.innerHTML += '<option disabled>No hay colaboradores</option>';
+                    collaboratorsListDiv.innerHTML = '<p class="text-center text-gray-500">No hay colaboradores registrados.</p>';
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    collaborators[data.nombre] = { id, ...data }; 
+
+                    // Llenar el <select>
+                    const option = document.createElement('option');
+                    option.value = data.nombre;
+                    option.textContent = data.nombre;
+                    collaboratorSelect.appendChild(option);
+
+                    // Llenar la lista de gestión
+                    const listItem = document.createElement('div');
+                    listItem.className = 'collaborator-list-item';
+                    listItem.innerHTML = `
+                        <div>
+                            <p class="font-medium">${data.nombre}</p>
+                            <p class="text-sm text-gray-500">${data.codigo} | ${data.posicion}</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button type="button" class="text-blue-500 hover:text-blue-700" onclick="window.editCollaborator('${id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="text-red-500 hover:text-red-700" onclick="window.deleteCollaborator('${id}', '${data.nombre}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    collaboratorsListDiv.appendChild(listItem);
+                });
+            }, (error) => {
+                console.error("Error al cargar colaboradores:", error);
+                collaboratorsListDiv.innerHTML = '<p class="text-center text-red-500">Error al cargar colaboradores.</p>';
+            });
+        }
+
+        // Función para cargar evaluaciones (CORREGIDA)
+        function loadEvaluations() {
+            const evaluationsRef = collection(db, "evaluaciones");
+            const q = query(evaluationsRef, orderBy("fecha", "desc"));
+        
+            onSnapshot(q, (snapshot) => {
+                evaluationsList.innerHTML = ''; // Limpia la lista
+                
+                if (snapshot.empty) {
+                    evaluationsList.innerHTML = '<p class="text-center text-gray-500">No hay evaluaciones registradas.</p>';
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-item flex justify-between items-center';
+                    
+                    const dateDisplay = data.fecha && data.fecha.seconds 
+                        ? new Date(data.fecha.seconds * 1000).toLocaleDateString()
+                        : 'Fecha no disponible';
+
+                    listItem.innerHTML = `
+                        <span>${data.colaborador} (${dateDisplay})</span>
+                        <i class="fas fa-search-plus text-blue-500 hover:text-blue-700"></i>
+                    `;
+                    // Asume que showDetailsModal existe, si no, lo necesitarás
+                    listItem.addEventListener('click', () => showDetailsModal(data)); 
+                    evaluationsList.appendChild(listItem);
+                });
+            }, (error) => {
+                console.error("Error al cargar evaluaciones:", error);
+                evaluationsList.innerHTML = '<p class="text-center text-red-500">Error al cargar evaluaciones.</p>';
+            });
+        }
+        
+        // Función de AUTENTICACIÓN (CORREGIDA) - ¡Esto resuelve el "Cargando id de usuario"!
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuario autenticado (anónimo)
+                userId = user.uid;
+                userIdSpan.textContent = userId;
+                
+                // Una vez autenticado, carga los datos
+                loadCollaborators();
+                loadEvaluations();
+                
+            } else {
+                // Si no hay usuario, inicia sesión de forma anónima
+                signInAnonymously(auth)
+                    .then(() => {
+                        console.log("Inicio de sesión anónimo exitoso.");
+                    })
+                    .catch((error) => {
+                        console.error("Error en autenticación anónima:", error);
+                        userIdSpan.textContent = 'Error de Auth';
+                        showMessageModal("No se pudo iniciar sesión. Verifica tu configuración de Firebase Auth.", true);
+                    });
+            }
+        });
+        
+        // Lógica de visualización de info del colaborador en el form
+        collaboratorSelect.addEventListener('change', () => {
+            const name = collaboratorSelect.value;
+            const collab = collaborators[name];
+            if (collab) {
+                collabCodeSpan.textContent = collab.codigo;
+                collabPositionSpan.textContent = collab.posicion;
+                collaboratorInfo.classList.remove('hidden');
+            } else {
+                collaboratorInfo.classList.add('hidden');
+                collabCodeSpan.textContent = '';
+                collabPositionSpan.textContent = '';
+            }
+        });
+
+
+        // *******************************************************************
+        // LÓGICA DE CÁLCULO DINÁMICO (ACTUALIZADA)
+        // *******************************************************************
+
+        // 1. Cálculo de Diferencia (Espacios)
+        function calculateDiferencia() {
+            const anterior = parseFloat(espAnteriorInput.value) || 0;
+            const actual = parseFloat(espActualInput.value) || 0;
+            espDiferenciaInput.value = (actual - anterior).toFixed(0);
+        }
+
+        espAnteriorInput.addEventListener('input', calculateDiferencia);
+        espActualInput.addEventListener('input', calculateDiferencia);
+
+        // 2. Cálculo de Puntuación para Checkboxes (Secciones 2 a 6)
+        /**
+         * Calcula la puntuación: 1 si TODOS están marcados, 0 si hay uno o más desmarcados.
+         * @param {NodeListOf<HTMLInputElement>} checkboxes - Lista de checkboxes de la sección.
+         * @param {HTMLInputElement} scoreInput - El input donde se mostrará la puntuación.
+         */
+        function calculateCheckboxScore(checkboxes, scoreInput) {
+            const totalCheckboxes = checkboxes.length;
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            
+            // Lógica de puntuación: 1 si todos (checkedCount === totalCheckboxes), 0 en cualquier otro caso
+            scoreInput.value = (checkedCount === totalCheckboxes) ? 1 : 0;
+        }
+
+        // Asignación de listeners a todas las secciones de Checkbox (Presencia, Precios, Exhibición, Conocimiento, Imagen)
+        
+        // 2. Presencia
+        presCheckboxes.forEach(cb => cb.addEventListener('change', () => calculateCheckboxScore(presCheckboxes, presPuntuacionInput)));
+        
+        // 3. Precios
+        precCheckboxes.forEach(cb => cb.addEventListener('change', () => calculateCheckboxScore(precCheckboxes, precPuntuacionInput)));
+        
+        // 4. Exhibición
+        exhCheckboxes.forEach(cb => cb.addEventListener('change', () => calculateCheckboxScore(exhCheckboxes, exhPuntuacionInput)));
+        
+        // 5. Conocimiento
+        conCheckboxes.forEach(cb => cb.addEventListener('change', () => calculateCheckboxScore(conCheckboxes, conPuntuacionInput)));
+        
+        // 6. Imagen
+        imaCheckboxes.forEach(cb => cb.addEventListener('change', () => calculateCheckboxScore(imaCheckboxes, imaPuntuacionInput)));
+
+
+        // *******************************************************************
+        // FUNCIONES DE GESTIÓN (Guardar Evaluación, Colaboradores, Modales)
+        // *******************************************************************
+        
+        // Función para obtener los datos del formulario de evaluación (ACTUALIZADA PARA INCLUIR LAS PUNTUACIONES)
+        function getFormData() {
+            return {
+                colaborador: collaboratorSelect.value,
+                userId: userId,
+                fecha: serverTimestamp(),
+                // Datos de Espacios
+                esp_anterior: parseFloat(espAnteriorInput.value) || 0,
+                esp_actual: parseFloat(espActualInput.value) || 0,
+                esp_diferencia: parseFloat(espDiferenciaInput.value) || 0,
+                esp_puntuacion: parseFloat(document.getElementById('esp-puntuacion').value) || 0,
+                esp_observacion: document.getElementById('esp-observacion').value,
+                
+                // Datos de Presencia (2)
+                pres_surtido: document.getElementById('pres-surtido').checked,
+                pres_agotado: document.getElementById('pres-agotado').checked,
+                pres_faltante: document.getElementById('pres-faltante').checked,
+                pres_puntuacion: parseFloat(presPuntuacionInput.value) || 0,
+                pres_observacion: document.getElementById('pres-observacion').value,
+                
+                // Datos de Precios (3)
+                prec_correcto: document.getElementById('prec-correcto').checked,
+                prec_marcado: document.getElementById('prec-marcado').checked,
+                prec_pop: document.getElementById('prec-pop').checked,
+                prec_puntuacion: parseFloat(precPuntuacionInput.value) || 0,
+                prec_observacion: document.getElementById('prec-observacion').value,
+
+                // Datos de Exhibición (4)
+                exh_pop: document.getElementById('exh-pop').checked,
+                exh_planograma: document.getElementById('exh-planograma').checked,
+                exh_adicional: document.getElementById('exh-adicional').checked,
+                exh_puntuacion: parseFloat(exhPuntuacionInput.value) || 0,
+                exh_observacion: document.getElementById('exh-observacion').value,
+                
+                // Datos de Conocimiento (5)
+                con_speech: document.getElementById('con-speech').checked,
+                con_productos: document.getElementById('con-productos').checked,
+                con_modo: document.getElementById('con-modo').checked,
+                con_puntuacion: parseFloat(conPuntuacionInput.value) || 0,
+                con_observacion: document.getElementById('con-observacion').value,
+                
+                // Datos de Imagen (6)
+                ima_uniforme: document.getElementById('ima-uniforme').checked,
+                ima_carnet: document.getElementById('ima-carnet').checked,
+                ima_imagen: document.getElementById('ima-imagen').checked,
+                ima_puntuacion: parseFloat(imaPuntuacionInput.value) || 0,
+                ima_observacion: document.getElementById('ima-observacion').value,
+                
+                // Datos de Ventas (7)
+                venta_rd: parseFloat(document.getElementById('venta-rd').value) || 0,
+                venta_unidades: parseFloat(document.getElementById('venta-unidades').value) || 0,
+                
+                // Datos de Reporte de Visita (8)
+                tipo_visita: document.getElementById('tipo-visita').value,
+                asistencia: document.getElementById('asistencia').value,
+                otras_observaciones: document.getElementById('otras-observaciones').value,
+                
+                // Datos de Política y Valores (9)
+                politica: document.getElementById('politica').checked,
+                mision: document.getElementById('mision').checked,
+                vision: document.getElementById('vision').checked,
+                valores: document.getElementById('valores').checked,
+                otras_observaciones_2: document.getElementById('otras-observaciones-2').value,
+                
+                // Datos de Puntos de Desarrollo (10)
+                llenado: document.getElementById('llenado').checked,
+                cambio: document.getElementById('cambio').checked,
+                oportunidad: document.getElementById('oportunidad').checked,
+                entrenamiento: document.getElementById('entrenamiento').checked,
+
+                // Datos de Especifique (11)
+                especifique: document.getElementById('especifique').value,
+                
+                // Datos de Puntos Trabajados (12)
+                puntos_trabajados: document.getElementById('puntos-trabajados').value,
+                
+                // Datos de Compromiso (13)
+                compromiso: document.getElementById('compromiso').value,
+                
+                // Datos de Necesidades Consultoras (14)
+                necesidades_con: document.getElementById('necesidades-con').value,
+                
+                // Datos de Necesidades Punto de Venta (15)
+                necesidades_pdv: document.getElementById('necesidades-pdv').value,
+                
+                // Datos de Pendientes (16)
+                faltantes: document.getElementById('faltantes').value,
+                ofertas: document.getElementById('ofertas').value,
+                
+                // Datos de Puntos de Acción (17)
+                que: document.getElementById('que').value,
+                quien: document.getElementById('quien').value,
+                como: document.getElementById('como').value,
+                cuando: document.getElementById('cuando').value,
+
+                // Puntuación Total (Opcional: puedes calcularla en el guardado o en una Cloud Function)
+                // total_score: 0 // Se dejará el cálculo para después
+            };
+        }
+
+        // 1. Guardar Evaluación
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!collaboratorSelect.value) {
+                showMessageModal("Por favor, selecciona un colaborador.", true);
+                return;
+            }
+
+            loadingOverlay.classList.remove('hidden');
+            const data = getFormData();
+            
+            try {
+                await addDoc(collection(db, "evaluaciones"), data);
+                showMessageModal("¡Evaluación guardada con éxito!");
+                form.reset(); // Limpia el formulario
+            } catch (error) {
+                console.error("Error al guardar la evaluación:", error);
+                showMessageModal("Error al guardar: " + error.message, true);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        // 2. Lógica para el formulario de Gestión de Colaboradores (Añadir/Actualizar)
+        collaboratorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loadingOverlay.classList.remove('hidden');
+
+            const collabData = {
+                nombre: collabNameInput.value.trim(),
+                codigo: collabCodeInput.value.trim(),
+                posicion: collabPositionInput.value.trim()
+            };
+
+            const docId = collabDocIdInput.value;
+
+            try {
+                if (docId) {
+                    // Actualizar
+                    await updateDoc(doc(db, "colaboradores", docId), collabData);
+                    showMessageModal(`Colaborador ${collabData.nombre} actualizado.`);
+                } else {
+                    // Agregar
+                    await addDoc(collection(db, "colaboradores"), collabData);
+                    showMessageModal(`Colaborador ${collabData.nombre} agregado.`);
+                }
+                collaboratorForm.reset();
+                cancelEditBtn.click(); // Limpia botones y docId
+            } catch (error) {
+                console.error("Error al guardar/actualizar colaborador:", error);
+                showMessageModal("Error al guardar/actualizar: " + error.message, true);
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        // Hacemos que las funciones de Edición y Eliminación sean globales para que el HTML inyectado pueda llamarlas
+        window.editCollaborator = (id) => {
+            const collab = Object.values(collaborators).find(c => c.id === id);
+            if (collab) {
+                collabDocIdInput.value = id;
+                collabNameInput.value = collab.nombre;
+                collabCodeInput.value = collab.codigo;
+                collabPositionInput.value = collab.posicion;
+                addCollabBtn.classList.add('hidden');
+                updateCollabBtn.classList.remove('hidden');
+                cancelEditBtn.classList.remove('hidden');
+            }
+        };
+
+        window.deleteCollaborator = async (id, name) => {
+            if (confirm(`¿Estás seguro de que deseas eliminar a ${name}?`)) {
+                loadingOverlay.classList.remove('hidden');
+                try {
+                    await deleteDoc(doc(db, "colaboradores", id));
+                    showMessageModal(`Colaborador ${name} eliminado.`, false);
+                } catch (error) {
+                    console.error("Error al eliminar:", error);
+                    showMessageModal("Error al eliminar: " + error.message, true);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            }
+        };
+
+        // Lógica de cierre de modales
+        closeModalBtn.addEventListener('click', () => messageModal.classList.add('hidden'));
+        closeDetailsModalBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
+        cancelEditBtn.addEventListener('click', () => {
+            collaboratorForm.reset();
+            collabDocIdInput.value = '';
+            addCollabBtn.classList.remove('hidden');
+            updateCollabBtn.classList.add('hidden');
+            cancelEditBtn.classList.add('hidden');
+        });
+        
+        // Función para mostrar detalles (requiere implementación completa de la vista)
+        function showDetailsModal(data) {
+             const collaboratorName = data.colaborador;
+             const collaboratorData = collaborators[collaboratorName];
+             
+             detailsContent.innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">${collaboratorName}</h2>
+                <p class="text-sm text-gray-500 mb-6">Evaluado el ${data.fecha && data.fecha.seconds ? new Date(data.fecha.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                
+                <div class="details-grid">
+                    <div><span class="font-semibold">Código:</span> ${collaboratorData?.codigo || 'N/A'}</div>
+                    <div><span class="font-semibold">Posición:</span> ${collaboratorData?.posicion || 'N/A'}</div>
+                    
+                    <h3 class="text-lg font-semibold sm:col-span-2 mt-4 border-b pb-1">Puntuaciones Clave (1=OK, 0=Falla)</h3>
+                    <div><span class="font-semibold">Presencia:</span> <span class="${data.pres_puntuacion == 1 ? 'text-green-600' : 'text-red-600'} font-bold">${data.pres_puntuacion}</span></div>
+                    <div><span class="font-semibold">Precios:</span> <span class="${data.prec_puntuacion == 1 ? 'text-green-600' : 'text-red-600'} font-bold">${data.prec_puntuacion}</span></div>
+                    <div><span class="font-semibold">Exhibición:</span> <span class="${data.exh_puntuacion == 1 ? 'text-green-600' : 'text-red-600'} font-bold">${data.exh_puntuacion}</span></div>
+                    <div><span class="font-semibold">Conocimiento:</span> <span class="${data.con_puntuacion == 1 ? 'text-green-600' : 'text-red-600'} font-bold">${data.con_puntuacion}</span></div>
+                    <div><span class="font-semibold">Imagen:</span> <span class="${data.ima_puntuacion == 1 ? 'text-green-600' : 'text-red-600'} font-bold">${data.ima_puntuacion}</span></div>
+
+                    <h3 class="text-lg font-semibold sm:col-span-2 mt-4 border-b pb-1">Otros Datos</h3>
+                    <div><span class="font-semibold">Espacios Diferencia:</span> ${data.esp_diferencia}</div>
+                    <div><span class="font-semibold">Venta RD:</span> ${data.venta_rd}</div>
+                    <div class="sm:col-span-2"><span class="font-semibold">Observación Espacios:</span> ${data.esp_observacion || 'N/A'}</div>
+                    <div class="sm:col-span-2"><span class="font-semibold">Reporte Visita:</span> ${data.tipo_visita} (${data.asistencia})</div>
+
+                    </div>
+             `;
+             detailsModal.classList.remove('hidden');
+        }
+        window.showDetailsModal = showDetailsModal; // Hazla global
+    </script>
+</body>
+</html>
