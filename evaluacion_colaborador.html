@@ -79,7 +79,7 @@
                 <button id="close-details-modal-btn" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <div id="details-content" class="max-h-96 overflow-y-auto">
-                <!-- Contenido de los detalles se inyectará aquí -->
+                <!-- El contenido de los detalles se inyectará aquí -->
             </div>
         </div>
     </div>
@@ -93,7 +93,7 @@
         <header class="text-center mb-8">
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Medición de Desempeño</h1>
             <p class="text-gray-500 mt-2">Completa el formulario para registrar una nueva evaluación.</p>
-            <p class="mt-2 text-sm text-gray-400">Tu ID de usuario: <span id="user-id-display" class="font-mono text-gray-500"></span></p>
+            <p id="user-info" class="text-sm text-gray-400 mt-2">ID de usuario: <span id="user-id">Cargando...</span></p>
         </header>
 
         <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -498,23 +498,22 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, doc, getDoc, serverTimestamp, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Establecer nivel de log para depuración de Firebase
         setLogLevel('debug');
-        
-        // Variables globales
-        let db;
-        let auth;
-        let userId;
 
-        // Configuración de Firebase - Estas variables se llenan automáticamente por la plataforma
+        // Variables globales para Firebase
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        let db;
+        let auth;
+        let userId = 'Cargando...'; // Estado inicial
+        let isAuthReady = false;
 
         // Referencias del DOM
-        const userIdDisplay = document.getElementById('user-id-display');
         const collaboratorSelect = document.getElementById('collaborator');
         const collaboratorInfo = document.getElementById('collaborator-info');
         const collabCodeSpan = document.getElementById('collab-code');
@@ -522,6 +521,7 @@
         const form = document.getElementById('evaluation-form');
         const evaluationsList = document.getElementById('evaluations-list');
         const loadingOverlay = document.getElementById('loading-overlay');
+        const userIdSpan = document.getElementById('user-id');
         
         // Modales
         const messageModal = document.getElementById('message-modal');
@@ -558,7 +558,7 @@
         const collabDocIdInput = document.getElementById('collab-doc-id');
         const collaboratorsListDiv = document.getElementById('collaborators-list');
         
-        // Función para mostrar un modal genérico
+        // Función para mostrar y ocultar modales
         function showModal(id, text = '', isSuccess = null) {
             const modal = document.getElementById(id);
             if (id === 'message-modal') {
@@ -574,90 +574,137 @@
             modal.classList.remove('hidden');
         }
 
-        // Función para ocultar un modal genérico
         function hideModal(id) {
             const modal = document.getElementById(id);
             modal.classList.add('hidden');
         }
 
-        // Event listeners para los botones de cerrar modal
         closeModalBtn.addEventListener('click', () => hideModal('message-modal'));
         closeDetailsModalBtn.addEventListener('click', () => hideModal('details-modal'));
 
-        // Inicializar la app de Firebase
-        initializeApp(firebaseConfig);
-        auth = getAuth();
-        db = getFirestore();
-
-        // Autenticación anónima o con token
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                userIdDisplay.textContent = userId;
-                console.log("Usuario autenticado. UID:", userId);
-                await setupRealtimeListener();
-                await setupCollaboratorsListener();
-            } else {
-                console.log("No hay usuario autenticado, iniciando sesión anónima...");
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
+        // Inicializar Firebase
+        async function initializeFirebase() {
+            loadingOverlay.classList.remove('hidden');
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                await onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdSpan.textContent = userId;
                     } else {
-                        await signInAnonymously(auth);
+                        // Iniciar sesión con el token personalizado o de forma anónima
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Error en signInWithCustomToken o signInAnonymously:", error);
+                            userId = 'Error';
+                            userIdSpan.textContent = userId;
+                            showModal('message-modal', "Hubo un error de autenticación. Por favor, recarga la página.", false);
+                        }
                     }
-                } catch (error) {
-                    console.error("Error al iniciar sesión:", error);
-                    showModal('message-modal', "Error al iniciar sesión. Por favor, recarga la página.", false);
-                }
+                    if (!isAuthReady) {
+                        isAuthReady = true;
+                        startDatabaseListeners();
+                    }
+                    loadingOverlay.classList.add('hidden');
+                });
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                showModal('message-modal', "Hubo un error al conectar con la base de datos. Por favor, revisa la consola para más detalles.", false);
+                loadingOverlay.classList.add('hidden');
             }
-        });
+        }
 
-        // Configurar el listener en tiempo real para los colaboradores
-        function setupCollaboratorsListener() {
-            const collaboratorsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/colaboradores`);
-            onSnapshot(collaboratorsCollectionRef, (snapshot) => {
+        // Iniciar los listeners para la base de datos
+        function startDatabaseListeners() {
+            if (!isAuthReady) {
+                console.warn("Autenticación no lista, no se pueden iniciar los listeners de la base de datos.");
+                return;
+            }
+            // Listener para los colaboradores
+            const collaboratorsRef = collection(db, `artifacts/${appId}/public/data/collaborators`);
+            onSnapshot(collaboratorsRef, (snapshot) => {
                 const collaborators = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Actualizar el select de evaluación
-                collaboratorSelect.innerHTML = '<option value="">Selecciona un colaborador</option>';
-                collaborators.forEach(collab => {
-                    const option = document.createElement('option');
-                    option.value = collab.name;
-                    option.textContent = `${collab.name}`;
-                    option.dataset.code = collab.code;
-                    option.dataset.position = collab.position;
-                    collaboratorSelect.appendChild(option);
-                });
-
-                // Actualizar la lista de gestión de colaboradores
-                collaboratorsListDiv.innerHTML = '';
-                if (collaborators.length === 0) {
-                    collaboratorsListDiv.innerHTML = `<p class="text-center text-gray-500">No hay colaboradores registrados.</p>`;
-                    return;
-                }
-                
-                collaborators.forEach(collab => {
-                    const listItem = document.createElement('div');
-                    listItem.className = 'collaborator-list-item';
-                    listItem.innerHTML = `
-                        <div>
-                            <p class="font-semibold">${collab.name}</p>
-                            <p class="text-xs text-gray-500">${collab.position} (${collab.code})</p>
-                        </div>
-                        <div class="space-x-2">
-                            <button class="edit-collab-btn text-blue-500 hover:text-blue-700" data-id="${collab.id}"><i class="fas fa-edit"></i></button>
-                            <button class="delete-collab-btn text-red-500 hover:text-red-700" data-id="${collab.id}"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    `;
-                    collaboratorsListDiv.appendChild(listItem);
-                });
+                loadCollaborators(collaborators);
             }, (error) => {
-                console.error("Error al escuchar colaboradores:", error);
-                collaboratorsListDiv.innerHTML = `<p class="text-center text-red-500">Error al cargar colaboradores.</p>`;
+                console.error("Error al obtener colaboradores:", error);
+                showModal('message-modal', "Error al cargar la lista de colaboradores.", false);
+            });
+
+            // Listener para las evaluaciones
+            const evaluationsRef = collection(db, `artifacts/${appId}/public/data/evaluations`);
+            onSnapshot(evaluationsRef, (snapshot) => {
+                const evaluations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                loadEvaluations(evaluations);
+            }, (error) => {
+                console.error("Error al obtener evaluaciones:", error);
+                showModal('message-modal', "Error al cargar las evaluaciones.", false);
+            });
+        }
+
+        function loadCollaborators(collaborators) {
+            collaboratorSelect.innerHTML = '<option value="">Selecciona un colaborador</option>';
+            collaborators.forEach(collab => {
+                const option = document.createElement('option');
+                option.value = collab.name;
+                option.textContent = `${collab.name}`;
+                option.dataset.code = collab.code;
+                option.dataset.position = collab.position;
+                collaboratorSelect.appendChild(option);
+            });
+
+            collaboratorsListDiv.innerHTML = '';
+            if (collaborators.length === 0) {
+                collaboratorsListDiv.innerHTML = `<p class="text-center text-gray-500">No hay colaboradores registrados.</p>`;
+                return;
+            }
+            
+            collaborators.forEach(collab => {
+                const listItem = document.createElement('div');
+                listItem.className = 'collaborator-list-item';
+                listItem.innerHTML = `
+                    <div>
+                        <p class="font-semibold">${collab.name}</p>
+                        <p class="text-xs text-gray-500">${collab.position} (${collab.code})</p>
+                    </div>
+                    <div class="space-x-2">
+                        <button class="edit-collab-btn text-blue-500 hover:text-blue-700" data-id="${collab.id}"><i class="fas fa-edit"></i></button>
+                        <button class="delete-collab-btn text-red-500 hover:text-red-700" data-id="${collab.id}"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                collaboratorsListDiv.appendChild(listItem);
             });
         }
         
-        // Listener para agregar/actualizar colaboradores
+        function loadEvaluations(evaluations) {
+            evaluationsList.innerHTML = '';
+            if (evaluations.length === 0) {
+                evaluationsList.innerHTML = `<p class="text-center text-gray-500">No hay evaluaciones registradas.</p>`;
+                return;
+            }
+            
+            evaluations.forEach(eval => {
+                const evaluationItem = document.createElement('div');
+                evaluationItem.className = 'list-item';
+                evaluationItem.dataset.docId = eval.id;
+                const date = new Date(eval.date).toLocaleDateString('es-ES');
+                evaluationItem.innerHTML = `
+                    <p class="text-sm text-gray-800 font-semibold">${eval.collaborator.name} (${eval.collaborator.code})</p>
+                    <p class="text-xs text-gray-500 mt-1">Evaluación del ${date}</p>
+                    <p class="text-xs text-gray-500 mt-1">Visita: ${eval.tipo_visita} | Asistencia: ${eval.asistencia}</p>
+                `;
+                evaluationsList.appendChild(evaluationItem);
+            });
+        }
+
+        // Event listeners para la gestión de colaboradores
         collaboratorForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             loadingOverlay.classList.remove('hidden');
@@ -674,70 +721,69 @@
             }
 
             try {
-                const collaboratorsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/colaboradores`);
+                const collaboratorsRef = collection(db, `artifacts/${appId}/public/data/collaborators`);
                 if (id) {
-                    // Actualizar
-                    const docRef = doc(collaboratorsCollectionRef, id);
-                    await setDoc(docRef, { name, code, position }, { merge: true });
+                    await setDoc(doc(collaboratorsRef, id), { name, code, position });
                     showModal('message-modal', "Colaborador actualizado exitosamente.", true);
                     collabDocIdInput.value = '';
                     addCollabBtn.classList.remove('hidden');
                     updateCollabBtn.classList.add('hidden');
                     cancelEditBtn.classList.add('hidden');
                 } else {
-                    // Agregar
-                    await addDoc(collaboratorsCollectionRef, { name, code, position });
+                    await addDoc(collaboratorsRef, { name, code, position });
                     showModal('message-modal', "Colaborador agregado exitosamente.", true);
                 }
                 collaboratorForm.reset();
             } catch (error) {
                 console.error("Error al guardar colaborador:", error);
-                showModal('message-modal', "Error al guardar colaborador. Por favor, inténtalo de nuevo.", false);
+                showModal('message-modal', "Error al guardar el colaborador.", false);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
         });
 
-        // Listener para editar colaboradores
-        collaboratorsListDiv.addEventListener('click', (e) => {
+        collaboratorsListDiv.addEventListener('click', async (e) => {
             if (e.target.closest('.edit-collab-btn')) {
                 const docId = e.target.closest('.edit-collab-btn').dataset.id;
-                const listItem = e.target.closest('.collaborator-list-item');
-                const name = listItem.querySelector('p:first-child').textContent;
-                const code = listItem.querySelector('p:last-child').textContent.match(/\(([^)]+)\)/)[1];
-                const position = listItem.querySelector('p:last-child').textContent.split('(')[0].trim();
+                loadingOverlay.classList.remove('hidden');
+                try {
+                    const collabRef = doc(db, `artifacts/${appId}/public/data/collaborators`, docId);
+                    const collabSnap = await getDoc(collabRef);
 
-                collabNameInput.value = name;
-                collabCodeInput.value = code;
-                collabPositionInput.value = position;
-                collabDocIdInput.value = docId;
-
-                addCollabBtn.classList.add('hidden');
-                updateCollabBtn.classList.remove('hidden');
-                cancelEditBtn.classList.remove('hidden');
-                collabNameInput.focus();
-            }
-        });
-
-        // Listener para eliminar colaboradores
-        collaboratorsListDiv.addEventListener('click', async (e) => {
-            if (e.target.closest('.delete-collab-btn')) {
+                    if (collabSnap.exists()) {
+                        const collab = collabSnap.data();
+                        collabNameInput.value = collab.name;
+                        collabCodeInput.value = collab.code;
+                        collabPositionInput.value = collab.position;
+                        collabDocIdInput.value = docId;
+                        addCollabBtn.classList.add('hidden');
+                        updateCollabBtn.classList.remove('hidden');
+                        cancelEditBtn.classList.remove('hidden');
+                        collabNameInput.focus();
+                    } else {
+                        showModal('message-modal', "Colaborador no encontrado.", false);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener colaborador para editar:", error);
+                    showModal('message-modal', "Error al obtener datos para edición.", false);
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            } else if (e.target.closest('.delete-collab-btn')) {
                 const docId = e.target.closest('.delete-collab-btn').dataset.id;
                 loadingOverlay.classList.remove('hidden');
                 try {
-                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/colaboradores`, docId);
-                    await deleteDoc(docRef);
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/collaborators`, docId));
                     showModal('message-modal', "Colaborador eliminado.", true);
                 } catch (error) {
-                console.error("Error al eliminar colaborador:", error);
-                showModal('message-modal', "Error al eliminar. Inténtalo de nuevo.", false);
+                    console.error("Error al eliminar colaborador:", error);
+                    showModal('message-modal', "Error al eliminar el colaborador.", false);
                 } finally {
                     loadingOverlay.classList.add('hidden');
                 }
             }
         });
 
-        // Listener para cancelar la edición
         cancelEditBtn.addEventListener('click', () => {
             collaboratorForm.reset();
             collabDocIdInput.value = '';
@@ -765,11 +811,9 @@
             espDiferenciaInput.value = actual - anterior;
         }
 
-        // Event listeners para calcular la diferencia
         espAnteriorInput.addEventListener('input', calculateEspDiferencia);
         espActualInput.addEventListener('input', calculateEspDiferencia);
 
-        // Función genérica para calcular puntuaciones de checkbox
         function calculateCheckboxScore(checkboxes) {
             let allChecked = true;
             checkboxes.forEach(checkbox => {
@@ -806,7 +850,7 @@
                     code: selectedOption.dataset.code,
                     position: selectedOption.dataset.position
                 },
-                date: serverTimestamp(),
+                date: new Date().toISOString(),
                 // Campos de ESP
                 esp_anterior: parseFloat(espAnteriorInput.value) || 0,
                 esp_actual: parseFloat(espActualInput.value) || 0,
@@ -875,14 +919,11 @@
             };
 
             try {
-                // Ruta para guardar los datos privados del usuario
-                const evaluationsCollection = collection(db, `artifacts/${appId}/users/${userId}/evaluaciones`);
-                await addDoc(evaluationsCollection, evaluationData);
-                
+                const evaluationsRef = collection(db, `artifacts/${appId}/public/data/evaluations`);
+                await addDoc(evaluationsRef, evaluationData);
                 form.reset();
                 collaboratorInfo.classList.add('hidden');
                 calculateEspDiferencia();
-                
                 showModal('message-modal', "¡Evaluación guardada exitosamente!", true);
             } catch (error) {
                 console.error("Error al guardar la evaluación:", error);
@@ -893,115 +934,88 @@
         });
 
         // Función para mostrar los detalles de la evaluación
-        function displayEvaluationDetails(data) {
-            let html = `
-                <h3 class="font-bold text-lg mb-2">${data.collaborator.name} (${data.collaborator.code})</h3>
-                <p class="text-xs text-gray-500 mb-4">Posición: ${data.collaborator.position}</p>
-                <p class="text-sm font-semibold mb-2">Fecha: ${data.date ? data.date.toDate().toLocaleDateString('es-ES') : 'N/A'}</p>
-                
-                <hr class="my-4">
-
-                <div class="details-grid">
-                    <div><strong>Venta RD:</strong> ${data.venta_rd}</div>
-                    <div><strong>Venta Unidades:</strong> ${data.venta_unidades}</div>
-                </div>
-
-                <hr class="my-4">
-                
-                <div class="details-grid">
-                    <div><strong>Tipo Visita:</strong> ${data.tipo_visita}</div>
-                    <div><strong>Asistencia:</strong> ${data.asistencia}</div>
-                    <div class="col-span-2"><strong>Otras Observaciones:</strong> ${data.otras_observaciones_1 || 'N/A'}</div>
-                </div>
-
-                <hr class="my-4">
-
-                <div class="details-grid">
-                    <div><strong>Anterior:</strong> ${data.esp_anterior}</div>
-                    <div><strong>Actual:</strong> ${data.esp_actual}</div>
-                    <div><strong>Diferencia:</strong> ${data.esp_diferencia}</div>
-                    <div><strong>Puntuación:</strong> ${data.esp_puntuacion}</div>
-                    <div class="col-span-2"><strong>Observación:</strong> ${data.esp_observacion || 'N/A'}</div>
-                </div>
-
-                <hr class="my-4">
-                
-                <div class="details-grid">
-                    <div><strong>Puntuación Presencia:</strong> ${data.pres_puntuacion}</div>
-                    <div><strong>Puntuación Precios:</strong> ${data.prec_puntuacion}</div>
-                    <div><strong>Puntuación Exhibición:</strong> ${data.exh_puntuacion}</div>
-                    <div><strong>Puntuación Conocimiento:</strong> ${data.con_puntuacion}</div>
-                    <div><strong>Puntuación Imagen:</strong> ${data.ima_puntuacion}</div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <div class="details-grid">
-                    <div class="col-span-2"><strong>Faltantes:</strong> ${data.faltantes || 'N/A'}</div>
-                    <div class="col-span-2"><strong>Ofertas:</strong> ${data.ofertas || 'N/A'}</div>
-                    <div class="col-span-2"><strong>Qué:</strong> ${data.que || 'N/A'}</div>
-                    <div class="col-span-2"><strong>Quién:</strong> ${data.quien || 'N/A'}</div>
-                    <div class="col-span-2"><strong>Cómo:</strong> ${data.como || 'N/A'}</div>
-                    <div class="col-span-2"><strong>Cuándo:</strong> ${data.cuando || 'N/A'}</div>
-                </div>
-            `;
-            detailsContent.innerHTML = html;
-            showModal('details-modal');
-        }
-
-        // Configurar el listener en tiempo real
-        function setupRealtimeListener() {
-            const evaluationsCollection = collection(db, `artifacts/${appId}/users/${userId}/evaluaciones`);
-            onSnapshot(evaluationsCollection, (snapshot) => {
-                evaluationsList.innerHTML = '';
-                if (snapshot.empty) {
-                    evaluationsList.innerHTML = `<p class="text-center text-gray-500">No hay evaluaciones registradas.</p>`;
-                    return;
-                }
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const evaluationItem = document.createElement('div');
-                    evaluationItem.className = 'list-item';
-                    evaluationItem.dataset.docId = doc.id;
-                    const date = data.date ? data.date.toDate().toLocaleDateString('es-ES') : 'Fecha no disponible';
-                    evaluationItem.innerHTML = `
-                        <p class="text-sm text-gray-800 font-semibold">${data.collaborator.name} (${data.collaborator.code})</p>
-                        <p class="text-xs text-gray-500 mt-1">Evaluación del ${date}</p>
-                        <p class="text-xs text-gray-500 mt-1">Visita: ${data.tipo_visita} | Asistencia: ${data.asistencia}</p>
-                    `;
-                    evaluationsList.appendChild(evaluationItem);
-                });
-            }, (error) => {
-                console.error("Error al escuchar evaluaciones:", error);
-                evaluationsList.innerHTML = `<p class="text-center text-red-500">Error al cargar evaluaciones. Inténtalo de nuevo.</p>`;
-            });
-        }
-        
-        // Listener para abrir el modal de detalles
-        evaluationsList.addEventListener('click', async (e) => {
-            const listItem = e.target.closest('.list-item');
-            if (!listItem) return;
-
+        async function displayEvaluationDetails(docId) {
             loadingOverlay.classList.remove('hidden');
-            const docId = listItem.dataset.docId;
-
             try {
-                const evaluationsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/evaluaciones`);
-                const docRef = doc(evaluationsCollectionRef, docId);
+                const docRef = doc(db, `artifacts/${appId}/public/data/evaluations`, docId);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    displayEvaluationDetails(docSnap.data());
+                    const data = docSnap.data();
+                    let html = `
+                        <h3 class="font-bold text-lg mb-2">${data.collaborator.name} (${data.collaborator.code})</h3>
+                        <p class="text-xs text-gray-500 mb-4">Posición: ${data.collaborator.position}</p>
+                        <p class="text-sm font-semibold mb-2">Fecha: ${new Date(data.date).toLocaleDateString('es-ES')}</p>
+                        
+                        <hr class="my-4">
+
+                        <div class="details-grid">
+                            <div><strong>Venta RD:</strong> ${data.venta_rd}</div>
+                            <div><strong>Venta Unidades:</strong> ${data.venta_unidades}</div>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <div class="details-grid">
+                            <div><strong>Tipo Visita:</strong> ${data.tipo_visita}</div>
+                            <div><strong>Asistencia:</strong> ${data.asistencia}</div>
+                            <div class="col-span-2"><strong>Otras Observaciones:</strong> ${data.otras_observaciones_1 || 'N/A'}</div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="details-grid">
+                            <div><strong>Anterior:</strong> ${data.esp_anterior}</div>
+                            <div><strong>Actual:</strong> ${data.esp_actual}</div>
+                            <div><strong>Diferencia:</strong> ${data.esp_diferencia}</div>
+                            <div><strong>Puntuación:</strong> ${data.esp_puntuacion}</div>
+                            <div class="col-span-2"><strong>Observación:</strong> ${data.esp_observacion || 'N/A'}</div>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <div class="details-grid">
+                            <div><strong>Puntuación Presencia:</strong> ${data.pres_puntuacion}</div>
+                            <div><strong>Puntuación Precios:</strong> ${data.prec_puntuacion}</div>
+                            <div><strong>Puntuación Exhibición:</strong> ${data.exh_puntuacion}</div>
+                            <div><strong>Puntuación Conocimiento:</strong> ${data.con_puntuacion}</div>
+                            <div><strong>Puntuación Imagen:</strong> ${data.ima_puntuacion}</div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="details-grid">
+                            <div class="col-span-2"><strong>Faltantes:</strong> ${data.faltantes || 'N/A'}</div>
+                            <div class="col-span-2"><strong>Ofertas:</strong> ${data.ofertas || 'N/A'}</div>
+                            <div class="col-span-2"><strong>Qué:</strong> ${data.que || 'N/A'}</div>
+                            <div class="col-span-2"><strong>Quién:</strong> ${data.quien || 'N/A'}</div>
+                            <div class="col-span-2"><strong>Cómo:</strong> ${data.como || 'N/A'}</div>
+                            <div class="col-span-2"><strong>Cuándo:</strong> ${data.cuando || 'N/A'}</div>
+                        </div>
+                    `;
+                    detailsContent.innerHTML = html;
+                    showModal('details-modal');
                 } else {
                     showModal('message-modal', "Documento no encontrado.", false);
                 }
             } catch (error) {
-                console.error("Error al obtener el documento:", error);
+                console.error("Error al obtener los detalles de la evaluación:", error);
                 showModal('message-modal', "Error al cargar los detalles.", false);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
+        }
+
+        evaluationsList.addEventListener('click', (e) => {
+            const listItem = e.target.closest('.list-item');
+            if (!listItem) return;
+            const docId = listItem.dataset.docId;
+            displayEvaluationDetails(docId);
+        });
+
+        // Cargar los datos al iniciar la página
+        window.addEventListener('load', () => {
+            initializeFirebase();
         });
     </script>
 </body>
